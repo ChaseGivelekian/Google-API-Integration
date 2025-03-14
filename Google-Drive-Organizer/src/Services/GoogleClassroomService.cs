@@ -16,4 +16,27 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         var result = await request.ExecuteAsync();
         return result.Courses;
     }
+
+    public async Task<Course> GetCourseAsync(string courseId)
+    {
+        if (string.IsNullOrEmpty(courseId))
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        var request = _classroomService.Courses.Get(courseId);
+        return await request.ExecuteAsync();
+    }
+
+    public async Task<IList<CourseWork>> GetCourseWorkAsync(string courseId)
+    {
+        if (string.IsNullOrEmpty(courseId))
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        var request = _classroomService.Courses.CourseWork.List(courseId);
+        var result = await request.ExecuteAsync();
+        return result.CourseWork ?? new List<CourseWork>();
+    }
 }

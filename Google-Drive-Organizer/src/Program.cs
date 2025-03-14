@@ -22,7 +22,7 @@ public static class Program
             var googleClassroomService = new GoogleClassroomService(classroomService);
             var courseLister = new ClassroomCourseLister(googleClassroomService);
 
-            await courseLister.ListCoursesAsync();
+            var courses = await new CourseWorkManager.Get
         }
         catch (Exception e)
         {
