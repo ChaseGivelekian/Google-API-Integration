@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Google.Apis.Classroom.v1" Version="1.69.0.3714" />
         <PackageReference Include="Google.Apis.Drive.v3" Version="1.69.0.3703" />
     </ItemGroup>
 

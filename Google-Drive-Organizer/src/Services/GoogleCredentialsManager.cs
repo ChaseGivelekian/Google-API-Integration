@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Classroom.v1;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
@@ -7,7 +8,12 @@ namespace Google_Drive_Organizer.Services;
 
 public static class GoogleCredentialsManager
 {
-    private static readonly string[] Scopes = [DriveService.Scope.DriveReadonly];
+    private static readonly string[] Scopes =
+    [
+        DriveService.Scope.DriveReadonly,
+        ClassroomService.Scope.ClassroomCoursesReadonly
+    ];
+
     private const string CredentialsPath = "credentials.json";
     private const string TokenPath = "token.json";
 
@@ -28,6 +34,15 @@ public static class GoogleCredentialsManager
     {
         var credential = await GetUserCredentialAsync();
         return new DriveService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential
+        });
+    }
+
+    public static async Task<ClassroomService> CreateClassroomServiceAsync()
+    {
+        var credential = await GetUserCredentialAsync();
+        return new ClassroomService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential
         });

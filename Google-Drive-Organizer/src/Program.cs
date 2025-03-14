@@ -9,11 +9,20 @@ public static class Program
     {
         try
         {
-            var driveService = await GoogleCredentialsManager.CreateDriveServiceAsync();
-            var googleDriveService = new GoogleDriveService(driveService);
-            var fileOrganizer = new DriveFileOrganizer(googleDriveService);
+            // Code to list all files in Google Drive
+            // var driveService = await GoogleCredentialsManager.CreateDriveServiceAsync();
+            // var googleDriveService = new GoogleDriveService(driveService);
+            // var fileOrganizer = new DriveFileOrganizer(googleDriveService);
+            //
+            // await fileOrganizer.ListAllFilesAsync();
 
-            await fileOrganizer.ListAllFilesAsync();
+
+            // Code to list all courses in Google Classroom
+            var classroomService = await GoogleCredentialsManager.CreateClassroomServiceAsync();
+            var googleClassroomService = new GoogleClassroomService(classroomService);
+            var courseLister = new ClassroomCourseLister(googleClassroomService);
+
+            await courseLister.ListCoursesAsync();
         }
         catch (Exception e)
         {
