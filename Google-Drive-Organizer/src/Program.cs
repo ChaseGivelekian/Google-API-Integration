@@ -20,9 +20,17 @@ public static class Program
             // Code to list all courses in Google Classroom
             var classroomService = await GoogleCredentialsManager.CreateClassroomServiceAsync();
             var googleClassroomService = new GoogleClassroomService(classroomService);
-            var courseLister = new ClassroomCourseLister(googleClassroomService);
+            // var courseLister = new ClassroomCourseLister(googleClassroomService);
 
-            var courses = await new CourseWorkManager.Get
+            var courses = await new CourseWorkManager(googleClassroomService).GetAllCoursesWorkAsync();
+            foreach (var course in courses)
+            {
+                Console.WriteLine($"Course: {course.Key}");
+                foreach (var work in course.Value)
+                {
+                    Console.WriteLine($"  - {work.Title}");
+                }
+            }
         }
         catch (Exception e)
         {

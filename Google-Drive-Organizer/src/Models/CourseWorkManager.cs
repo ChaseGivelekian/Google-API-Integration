@@ -21,7 +21,7 @@ public class CourseWorkManager(IGoogleClassroomService classroomService)
         }
     }
 
-    public async Task<Dictionary<string, IList<CourseWork>>> GetAllCoursesWorkAsync(string courseId)
+    public async Task<Dictionary<string, IList<CourseWork>>> GetAllCoursesWorkAsync()
     {
         try
         {
