@@ -5,7 +5,7 @@ using Google.Apis.Util.Store;
 
 namespace Google_Drive_Organizer.Services;
 
-public class GoogleCredentialsManager
+public static class GoogleCredentialsManager
 {
     private static readonly string[] Scopes = [DriveService.Scope.DriveReadonly];
     private const string CredentialsPath = "credentials.json";
