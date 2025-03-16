@@ -6,6 +6,9 @@ public class DriveFileOrganizer(IGoogleDriveService driveService)
 {
     private readonly IGoogleDriveService _driveService = driveService ?? throw new ArgumentNullException(nameof(driveService));
 
+    /// <summary>
+    /// Lists all the files in the users Google Drive.
+    /// </summary>
     public async Task ListAllFilesAsync()
     {
         try

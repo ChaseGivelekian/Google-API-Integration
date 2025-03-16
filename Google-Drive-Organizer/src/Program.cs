@@ -28,7 +28,18 @@ public static class Program
                 Console.WriteLine($"Course: {course.Key}");
                 foreach (var work in course.Value)
                 {
-                    Console.WriteLine($"  - {work.Title}");
+                    if (work is { DueDate: not null, DueTime: not null })
+                    {
+                        Console.WriteLine(
+                            new DateTime((int)work.DueDate.Year!, (int)work.DueDate.Month!, (int)work.DueDate.Day!,
+                                (int)work.DueTime.Hours!, (int)work.DueTime.Minutes!, 0) > DateTime.Now
+                                ? $"  - {work.Title} (Due: {work.DueDate.Month}-{work.DueDate.Day}-{work.DueDate.Year} {work.DueTime.Hours}:{work.DueTime.Minutes})"
+                                : $"  - {work.Title} PAST DUE");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  - {work.Title} (No due date)");
+                    }
                 }
             }
         }

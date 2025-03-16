@@ -18,6 +18,10 @@ public static class GoogleCredentialsManager
     private const string CredentialsPath = "credentials.json";
     private const string TokenPath = "token.json";
 
+    /// <summary>
+    /// Gets the user credential asynchronously.
+    /// </summary>
+    /// <returns>Returns an authorization for the user.</returns>
     private static async Task<UserCredential> GetUserCredentialAsync()
     {
         await using var stream = new FileStream(CredentialsPath, FileMode.Open, FileAccess.Read);
@@ -31,6 +35,10 @@ public static class GoogleCredentialsManager
             new FileDataStore(TokenPath, true));
     }
 
+    /// <summary>
+    /// Creates a Drive service asynchronously.
+    /// </summary>
+    /// <returns>Returns a new DriveService</returns>
     public static async Task<DriveService> CreateDriveServiceAsync()
     {
         var credential = await GetUserCredentialAsync();
@@ -40,6 +48,10 @@ public static class GoogleCredentialsManager
         });
     }
 
+    /// <summary>
+    /// Creates a Classroom service asynchronously.
+    /// </summary>
+    /// <returns>Returns a new ClassroomService</returns>
     public static async Task<ClassroomService> CreateClassroomServiceAsync()
     {
         var credential = await GetUserCredentialAsync();

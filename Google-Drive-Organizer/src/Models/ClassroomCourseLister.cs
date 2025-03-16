@@ -8,11 +8,16 @@ public class ClassroomCourseLister(IGoogleClassroomService classroomService)
     private readonly IGoogleClassroomService _classroomService =
         classroomService ?? throw new ArgumentNullException(nameof(classroomService));
 
-    public async Task<IList<Course>> ListCoursesAsync()
+    /// <summary>
+    /// Lists all courses in Google Classroom.
+    /// </summary>
+    /// <param name="pageSize">Integer for how many objects to be returned per page</param>
+    /// <returns>Returns a list of courses</returns>
+    public async Task<IList<Course>> ListCoursesAsync(int pageSize)
     {
         try
         {
-            var courses = await _classroomService.ListCoursesAsync(100);
+            var courses = await _classroomService.ListCoursesAsync(pageSize);
 
             return courses.Count == 0 ? new List<Course>() : courses;
         }

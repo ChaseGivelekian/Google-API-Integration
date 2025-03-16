@@ -8,6 +8,11 @@ public class CourseWorkManager(IGoogleClassroomService classroomService)
 {
     private readonly IGoogleClassroomService _classroomService = classroomService ?? throw new ArgumentNullException(nameof(classroomService));
 
+    /// <summary>
+    /// Gets the coursework for a specific course.
+    /// </summary>
+    /// <param name="courseId">Id used to identify the course</param>
+    /// <returns>Coursework for specified course</returns>
     public async Task<IList<CourseWork>> GetCourseWorksAsync(string courseId)
     {
         try
@@ -21,6 +26,10 @@ public class CourseWorkManager(IGoogleClassroomService classroomService)
         }
     }
 
+    /// <summary>
+    /// Gets all course work for all courses.
+    /// </summary>
+    /// <returns>Returns a dictionary of the course name and its work</returns>
     public async Task<Dictionary<string, IList<CourseWork>>> GetAllCoursesWorkAsync()
     {
         try

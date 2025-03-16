@@ -8,6 +8,11 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
 {
     private readonly ClassroomService _classroomService = classroomService ?? throw new ArgumentNullException(nameof(classroomService));
 
+    /// <summary>
+    /// Gets a list of courses.
+    /// </summary>
+    /// <param name="pageSize">How many objects will be returned for each page</param>
+    /// <returns>Returns a list of courses</returns>
     public async Task<IList<Course>> ListCoursesAsync(int pageSize)
     {
         var request = _classroomService.Courses.List();
@@ -17,6 +22,11 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return result.Courses;
     }
 
+    /// <summary>
+    /// Gets a specific course by its ID.
+    /// </summary>
+    /// <param name="courseId">Identifier for the course</param>
+    /// <returns>Returns a course object</returns>
     public async Task<Course> GetCourseAsync(string courseId)
     {
         if (string.IsNullOrEmpty(courseId))
@@ -28,6 +38,15 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return await request.ExecuteAsync();
     }
 
+    /// <summary>
+    /// Gets the coursework for a specific course.
+    /// </summary>
+    /// <param name="courseId">
+    /// The ID of the course for which to get coursework.
+    /// </param>
+    /// <returns>
+    /// Returns a list of coursework for the specified course.
+    /// </returns>
     public async Task<IList<CourseWork>> GetCourseWorkAsync(string courseId)
     {
         if (string.IsNullOrEmpty(courseId))
