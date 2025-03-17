@@ -1,5 +1,6 @@
 ﻿using Google_Drive_Organizer.Interfaces;
 using Google_Drive_Organizer.Models;
+using Google.Apis.Classroom.v1.Data;
 
 namespace Google_Drive_Organizer;
 
@@ -31,12 +32,12 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         }
     }
 
-    private static bool HasValidDueDate(Google.Apis.Classroom.v1.Data.CourseWork work)
+    private static bool HasValidDueDate(CourseWork work)
     {
         return work is { DueDate: not null, DueTime: not null };
     }
 
-    private static bool IsPastDue(Google.Apis.Classroom.v1.Data.CourseWork work)
+    private static bool IsPastDue(CourseWork work)
     {
         // Ensure all required values are present
         if (!work.DueDate.Year.HasValue || !work.DueDate.Month.HasValue || !work.DueDate.Day.HasValue ||
@@ -57,7 +58,7 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         return dueDateTime <= DateTime.Now;
     }
 
-    private static void DisplayCourseWorkDetails(Google.Apis.Classroom.v1.Data.CourseWork work)
+    private static void DisplayCourseWorkDetails(CourseWork work)
     {
         // Make sure all values are available before formatting
         if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
@@ -71,7 +72,7 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         }
     }
 
-    private async Task DisplaySubmissionsForCourseWork(Google.Apis.Classroom.v1.Data.CourseWork work)
+    private async Task DisplaySubmissionsForCourseWork(CourseWork work)
     {
         var submissions = await _googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(work.CourseId, work.Id);
 
@@ -80,6 +81,36 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         foreach (var submission in submissions)
         {
             Console.WriteLine($"    - {submission.State}");
+
+            if (!IsActiveSubmission(submission)) continue;
+            if (ContainsDocument(submission))
+            {
+                Console.WriteLine("      Contains a Google Docs attachment");
+            }
         }
+    }
+
+    private static bool IsActiveSubmission(StudentSubmission submission)
+    {
+        // Check if submission is in one of the active states
+        return submission.State is "NEW" or "CREATED";
+    }
+
+    private static bool ContainsDocument(StudentSubmission submission)
+    {
+        // Check if the submission contains a document attachment
+        if (submission.AssignmentSubmission?.Attachments == null)
+        {
+            return false;
+        }
+
+        return submission.AssignmentSubmission.Attachments.Any(attachment =>
+            attachment.DriveFile != null &&
+            IsGoogleDocument(attachment.DriveFile));
+    }
+
+    private static bool IsGoogleDocument(DriveFile driveFile)
+    {
+        return driveFile.AlternateLink?.Contains("docs.google.com/document", StringComparison.OrdinalIgnoreCase) ?? false;
     }
 }
