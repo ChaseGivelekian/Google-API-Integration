@@ -38,12 +38,19 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
     private static bool IsPastDue(Google.Apis.Classroom.v1.Data.CourseWork work)
     {
+        // Ensure all required values are present
+        if (!work.DueDate.Year.HasValue || !work.DueDate.Month.HasValue || !work.DueDate.Day.HasValue ||
+            !work.DueTime.Hours.HasValue || !work.DueTime.Minutes.HasValue)
+        {
+            return false; // Can't determine if it's past due without complete date/time
+        }
+
         var dueDateTime = new DateTime(
-            (int)work.DueDate.Year!,
-            (int)work.DueDate.Month!,
-            (int)work.DueDate.Day!,
-            (int)work.DueTime.Hours!,
-            (int)work.DueTime.Minutes!,
+            work.DueDate.Year.Value,
+            work.DueDate.Month.Value,
+            work.DueDate.Day.Value,
+            work.DueTime.Hours.Value,
+            work.DueTime.Minutes.Value,
             0
         );
 
@@ -52,7 +59,16 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
     private static void DisplayCourseWorkDetails(Google.Apis.Classroom.v1.Data.CourseWork work)
     {
-        Console.WriteLine($"  - {work.Title} (Due: {work.DueDate.Month}-{work.DueDate.Day}-{work.DueDate.Year} {work.DueTime.Hours}:{work.DueTime.Minutes})");
+        // Make sure all values are available before formatting
+        if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
+            work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
+        {
+            Console.WriteLine($"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
+        }
+        else
+        {
+            Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
+        }
     }
 
     private async Task DisplaySubmissionsForCourseWork(Google.Apis.Classroom.v1.Data.CourseWork work)
