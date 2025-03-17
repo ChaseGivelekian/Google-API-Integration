@@ -28,17 +28,17 @@ public static class Program
                 Console.WriteLine($"Course: {course.Key}");
                 foreach (var work in course.Value)
                 {
-                    if (work is { DueDate: not null, DueTime: not null })
+                    if (work is not { DueDate: not null, DueTime: not null }) continue;
+                    if (new DateTime((int)work.DueDate.Year!, (int)work.DueDate.Month!, (int)work.DueDate.Day!,
+                            (int)work.DueTime.Hours!, (int)work.DueTime.Minutes!, 0) <= DateTime.Now) continue;
+                    Console.WriteLine($"  - {work.Title} (Due: {work.DueDate.Month}-{work.DueDate.Day}-{work.DueDate.Year} {work.DueTime.Hours}:{work.DueTime.Minutes})");
+
+                    // Gets the student submissions for a specific course work
+                    var submissions = await googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(course.Key, work.Id);
+
+                    foreach (var submission in submissions)
                     {
-                        Console.WriteLine(
-                            new DateTime((int)work.DueDate.Year!, (int)work.DueDate.Month!, (int)work.DueDate.Day!,
-                                (int)work.DueTime.Hours!, (int)work.DueTime.Minutes!, 0) > DateTime.Now
-                                ? $"  - {work.Title} (Due: {work.DueDate.Month}-{work.DueDate.Day}-{work.DueDate.Year} {work.DueTime.Hours}:{work.DueTime.Minutes})"
-                                : $"  - {work.Title} PAST DUE");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"  - {work.Title} (No due date)");
+                        Console.WriteLine($"    - {submission.Id} ({submission.State})");
                     }
                 }
             }

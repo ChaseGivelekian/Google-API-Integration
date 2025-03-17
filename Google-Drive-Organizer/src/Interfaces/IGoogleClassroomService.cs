@@ -7,4 +7,5 @@ public interface IGoogleClassroomService
     Task<IList<Course>> ListCoursesAsync(int pageSize);
     Task<Course> GetCourseAsync(string courseId);
     Task<IList<CourseWork>> GetCourseWorkAsync(string courseId);
+    Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId, string courseWorkId);
 }

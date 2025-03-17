@@ -58,4 +58,17 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         var result = await request.ExecuteAsync();
         return result.CourseWork ?? new List<CourseWork>();
     }
+
+    /// <summary>
+    /// Gets the submissions for a specific course and coursework and returns them as a list.
+    /// </summary>
+    /// <param name="courseId">Identifier for the course.</param>
+    /// <param name="courseWorkId">Identifier for the coursework.</param>
+    /// <returns>Returns a list of student submissions.</returns>
+    public async Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId, string courseWorkId)
+    {
+        var request = _classroomService.Courses.CourseWork.StudentSubmissions.List(courseId, courseWorkId);
+        var result = await request.ExecuteAsync();
+        return result.StudentSubmissions ?? new List<StudentSubmission>();
+    }
 }
