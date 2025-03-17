@@ -34,11 +34,12 @@ public static class Program
                     Console.WriteLine($"  - {work.Title} (Due: {work.DueDate.Month}-{work.DueDate.Day}-{work.DueDate.Year} {work.DueTime.Hours}:{work.DueTime.Minutes})");
 
                     // Gets the student submissions for a specific course work
-                    var submissions = await googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(course.Key, work.Id);
+                    var submissions = await googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(work.CourseId, work.Id);
 
+                    if (!submissions.Any()) continue;
                     foreach (var submission in submissions)
                     {
-                        Console.WriteLine($"    - {submission.Id} ({submission.State})");
+                        Console.WriteLine($"    - {submission.State}");
                     }
                 }
             }
