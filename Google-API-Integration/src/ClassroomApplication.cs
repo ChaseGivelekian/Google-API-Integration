@@ -6,8 +6,11 @@ namespace Google_Drive_Organizer;
 
 public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService)
 {
-    private readonly CourseWorkManager _courseWorkManager = courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
-    private readonly IGoogleClassroomService _googleClassroomService = googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
+    private readonly CourseWorkManager _courseWorkManager =
+        courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
+
+    private readonly IGoogleClassroomService _googleClassroomService =
+        googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
 
     public async Task RunAsync()
     {
@@ -20,14 +23,11 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
         foreach (var course in courses)
         {
-            Console.WriteLine($"Course: {course.Key}");
-
             foreach (var work in course.Value)
             {
                 if (!HasValidDueDate(work) || IsPastDue(work)) continue;
 
-                DisplayCourseWorkDetails(work);
-                await DisplaySubmissionsForCourseWork(work);
+                await DisplaySubmissionsWithDocsForCourseWork(course.Key, work);
             }
         }
     }
@@ -58,35 +58,35 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         return dueDateTime <= DateTime.Now;
     }
 
-    private static void DisplayCourseWorkDetails(CourseWork work)
+    private async Task DisplaySubmissionsWithDocsForCourseWork(string courseName, CourseWork work)
     {
-        // Make sure all values are available before formatting
-        if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
-            work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
-        {
-            Console.WriteLine($"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
-        }
-        else
-        {
-            Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
-        }
-    }
+        var submissions =
+            await _googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(work.CourseId, work.Id);
 
-    private async Task DisplaySubmissionsForCourseWork(CourseWork work)
-    {
-        var submissions = await _googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(work.CourseId, work.Id);
-
-        if (!submissions.Any()) return;
+        var courseDisplayed = false;
 
         foreach (var submission in submissions)
         {
-            Console.WriteLine($"    - {submission.State}");
+            if (!IsActiveSubmission(submission) || !ContainsDocument(submission)) continue;
 
-            if (!IsActiveSubmission(submission)) continue;
-            if (ContainsDocument(submission))
+            if (!courseDisplayed)
             {
-                Console.WriteLine("      Contains a Google Docs attachment");
+                Console.WriteLine($"Course: {courseName}");
+
+                if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
+                    work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
+                {
+                    Console.WriteLine(
+                        $"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
+                }
+                else
+                {
+                    Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
+                }
+
+                courseDisplayed = true;
             }
+            Console.WriteLine($"    - {submission.State}");
         }
     }
 
@@ -111,6 +111,7 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
     private static bool IsGoogleDocument(DriveFile driveFile)
     {
-        return driveFile.AlternateLink?.Contains("docs.google.com/document", StringComparison.OrdinalIgnoreCase) ?? false;
+        return driveFile.AlternateLink?.Contains("docs.google.com/document", StringComparison.OrdinalIgnoreCase) ??
+               false;
     }
 }
