@@ -76,4 +76,45 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         var result = await request.ExecuteAsync();
         return result.StudentSubmissions ?? new List<StudentSubmission>();
     }
+
+    /// <summary>
+    /// Gets student submissions for multiple course works in a single course.
+    /// </summary>
+    /// <param name="courseId">Identifier for the course/class</param>
+    /// <param name="courseWorkIds">List of course work identifiers</param>
+    /// <returns>Dictionary mapping course work IDs to their respective student submissions</returns>
+    public async Task<Dictionary<string, IList<StudentSubmission>>> GetStudentSubmissionsForMultipleCourseWorksAsync(
+        string courseId, IList<string> courseWorkIds)
+    {
+        if (string.IsNullOrEmpty(courseId))
+        {
+            throw new ArgumentNullException(nameof(courseId));
+        }
+
+        if (courseWorkIds == null || !courseWorkIds.Any())
+        {
+            throw new ArgumentException("Course work IDs cannot be null or empty", nameof(courseWorkIds));
+        }
+
+        var result = new Dictionary<string, IList<StudentSubmission>>();
+
+        // Unfortunately, the Classroom API doesn't have a true batch endpoint for submissions
+        // We need to fetch each course work's submissions separately but can do so concurrently
+        var tasks = courseWorkIds.Select(async courseWorkId =>
+        {
+            var submissions = await GetStudentSubmissionsForSpecificCourseWorkAsync(courseId, courseWorkId);
+            return (courseWorkId, submissions);
+        });
+
+        // Wait for all requests to complete
+        var results = await Task.WhenAll(tasks);
+
+        // Build the result dictionary
+        foreach (var (courseWorkId, submissions) in results)
+        {
+            result[courseWorkId] = submissions;
+        }
+
+        return result;
+    }
 }

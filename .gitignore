@@ -1,6 +1,6 @@
 ﻿.idea
 credentials.json
 token.json
-Google-Drive-Organizer/bin
-Google-Drive-Organizer/obj
+Google-API-Integration/bin
+Google-API-Integration/obj
 *.user

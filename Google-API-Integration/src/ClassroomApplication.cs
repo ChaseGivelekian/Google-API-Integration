@@ -14,7 +14,87 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
     public async Task RunAsync()
     {
-        await DisplayCourseWorkInformation();
+        await DisplayCourseWorkInformationBatched();
+    }
+
+    private async Task DisplayCourseWorkInformationBatched()
+    {
+        var courses = await _courseWorkManager.GetAllCoursesWorkAsync();
+        
+        // Group all valid coursework by course ID for batch processing
+        var validWorkByCourse = new Dictionary<string, List<(string courseName, CourseWork work)>> ();
+
+        foreach (var (courseName, value) in courses)
+        {
+            var validWorks = value.Where(work => HasValidDueDate(work) && !IsPastDue(work))
+                .Select(work => (courseName, work)).ToList();
+
+            if (validWorks.Count == 0) continue;
+
+            foreach (var (_, work) in validWorks)
+            {
+                var courseId = work.CourseId;
+                if (!validWorkByCourse.TryGetValue(courseId, out var list))
+                {
+                    list = new List<(string courseName, CourseWork)>();
+                    validWorkByCourse[courseId] = list;
+                }
+
+                list.Add((courseName, work));
+            }
+        }
+        
+        // Process each course in batch
+        foreach (var (courseId, workItems) in validWorkByCourse)
+        {
+            // Get all courseWork IDs for this course
+            var courseWorkIds = workItems.Select(w => w.work.Id).ToList();
+            
+            // Batch fetches all submissions for this course's work items
+            var allSubmissions =
+                await _googleClassroomService.GetStudentSubmissionsForMultipleCourseWorksAsync(courseId, courseWorkIds);
+            
+            // Process results
+            DisplayBatchedSubmissions(workItems, allSubmissions);
+        }
+    }
+    
+    private static void DisplayBatchedSubmissions(
+        List<(string courseName, CourseWork work)> workItems, 
+        Dictionary<string, IList<StudentSubmission>> submissionsByCourseWorkId)
+    {
+        foreach (var (courseName, work) in workItems)
+        {
+            if (!submissionsByCourseWorkId.TryGetValue(work.Id, out var submissions))
+                continue;
+            
+            var courseDisplayed = false;
+        
+            foreach (var submission in submissions)
+            {
+                if (!IsActiveSubmission(submission) || !ContainsDocument(submission)) 
+                    continue;
+                
+                if (!courseDisplayed)
+                {
+                    Console.WriteLine($"Course: {courseName}");
+                
+                    if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
+                        work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
+                    {
+                        Console.WriteLine(
+                            $"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
+                    }
+                
+                    courseDisplayed = true;
+                }
+                Console.WriteLine($"    - {submission.State}");
+            }
+        }
     }
 
     private async Task DisplayCourseWorkInformation()
