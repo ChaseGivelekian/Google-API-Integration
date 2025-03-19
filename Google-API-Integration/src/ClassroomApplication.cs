@@ -1,16 +1,22 @@
 ﻿using Google_Drive_Organizer.Interfaces;
 using Google_Drive_Organizer.Models;
+using Google_Drive_Organizer.Services;
 using Google.Apis.Classroom.v1.Data;
 
 namespace Google_Drive_Organizer;
 
-public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService)
+public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, UserInputHandler inputHandler, GoogleDocsService googleDocsService)
 {
     private readonly CourseWorkManager _courseWorkManager =
         courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
 
     private readonly IGoogleClassroomService _googleClassroomService =
         googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
+
+    private readonly UserInputHandler _inputHandler =
+        inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
+
+    private readonly GoogleDocsService _googleDocsService = googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
 
     public async Task RunAsync()
     {
@@ -20,9 +26,9 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
     private async Task DisplayCourseWorkInformationBatched()
     {
         var courses = await _courseWorkManager.GetAllCoursesWorkAsync();
-        
+
         // Group all valid coursework by course ID for batch processing
-        var validWorkByCourse = new Dictionary<string, List<(string courseName, CourseWork work)>> ();
+        var validWorkByCourse = new Dictionary<string, List<(string courseName, CourseWork work)>>();
 
         foreach (var (courseName, value) in courses)
         {
@@ -43,43 +49,52 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
                 list.Add((courseName, work));
             }
         }
-        
+
         // Process each course in batch
         foreach (var (courseId, workItems) in validWorkByCourse)
         {
             // Get all courseWork IDs for this course
             var courseWorkIds = workItems.Select(w => w.work.Id).ToList();
-            
+
             // Batch fetches all submissions for this course's work items
             var allSubmissions =
                 await _googleClassroomService.GetStudentSubmissionsForMultipleCourseWorksAsync(courseId, courseWorkIds);
-            
+
             // Process results
-            DisplayBatchedSubmissions(workItems, allSubmissions);
+            await DisplayBatchedSubmissions(workItems, allSubmissions);
         }
     }
-    
-    private static void DisplayBatchedSubmissions(
-        List<(string courseName, CourseWork work)> workItems, 
+
+    private async Task DisplayBatchedSubmissions(
+        List<(string courseName, CourseWork work)> workItems,
         Dictionary<string, IList<StudentSubmission>> submissionsByCourseWorkId)
     {
-        foreach (var (courseName, work) in workItems)
+        var courseNumber = 0;
+        var displayedCourseIndices = new List<int>();
+
+        for (var i = 0; i < workItems.Count; i++)
         {
+            var (courseName, work) = workItems[i];
+
             if (!submissionsByCourseWorkId.TryGetValue(work.Id, out var submissions))
                 continue;
-            
-            var courseDisplayed = false;
-        
+
+            var courseDisplayed = true;
+
             foreach (var submission in submissions)
             {
-                if (!IsActiveSubmission(submission) || !ContainsDocument(submission)) 
+                if (!IsActiveSubmission(submission) || !ContainsDocument(submission))
                     continue;
-                
-                if (!courseDisplayed)
+
+                if (courseDisplayed)
                 {
-                    Console.WriteLine($"Course: {courseName}");
-                
-                    if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
+                    courseNumber++;
+                    displayedCourseIndices.Add(i);
+
+                    Console.WriteLine($"{courseNumber}. Course: {courseName}");
+
+                    if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue &&
+                        work.DueDate.Year.HasValue &&
                         work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
                     {
                         Console.WriteLine(
@@ -89,12 +104,18 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
                     {
                         Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
                     }
-                
-                    courseDisplayed = true;
+
+                    courseDisplayed = false;
                 }
+
                 Console.WriteLine($"    - {submission.State}");
             }
         }
+
+        if (courseNumber <= 0) return;
+        var courseToProcess = _inputHandler.GetIntegerInput("Which course would you like to process", 0, courseNumber);
+        var selectedWorkItemIndex = displayedCourseIndices[courseToProcess - 1];
+        await _googleDocsService.GetGoogleDoc(submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id]);
     }
 
     private async Task DisplayCourseWorkInformation()
@@ -166,6 +187,7 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
                 courseDisplayed = true;
             }
+
             Console.WriteLine($"    - {submission.State}");
         }
     }

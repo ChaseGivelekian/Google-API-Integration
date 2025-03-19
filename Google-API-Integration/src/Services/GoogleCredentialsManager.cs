@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Classroom.v1;
+using Google.Apis.Docs.v1;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
@@ -10,7 +11,7 @@ public static class GoogleCredentialsManager
 {
     private static readonly string[] Scopes =
     [
-        DriveService.Scope.DriveReadonly,
+        DriveService.Scope.Drive,
         ClassroomService.Scope.ClassroomCoursesReadonly,
         ClassroomService.Scope.ClassroomCourseworkMeReadonly
     ];
@@ -56,6 +57,15 @@ public static class GoogleCredentialsManager
     {
         var credential = await GetUserCredentialAsync();
         return new ClassroomService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential
+        });
+    }
+
+    public static async Task<DocsService> CreateDocsServiceAsync()
+    {
+        var credential = await GetUserCredentialAsync();
+        return new DocsService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential
         });
