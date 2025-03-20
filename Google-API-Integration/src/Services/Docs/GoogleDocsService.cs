@@ -1,7 +1,9 @@
-﻿using Google.Apis.Classroom.v1.Data;
+﻿using Google_Drive_Organizer.Interfaces;
+using Google_Drive_Organizer.Services.Docs.DocsContentProcessing;
+using Google.Apis.Classroom.v1.Data;
 using Google.Apis.Docs.v1;
 
-namespace Google_Drive_Organizer.Services;
+namespace Google_Drive_Organizer.Services.Docs;
 
 public class GoogleDocsService
 {
@@ -29,6 +31,20 @@ public class GoogleDocsService
             {
                 Console.WriteLine($"Document not found for submission: {studentSubmission.Id}");
             }
+        }
+    }
+
+    public async Task GetGoogleDocWithoutParameter()
+    {
+        try
+        {
+            var result = await _docsService.Documents.Get("1_a7fdEZFwkzUhGgFkqBvusqtb3L1csfBWJ8CyzhWWKs").ExecuteAsync();
+            Console.WriteLine($"Retrieved document: {result.Title}");
+            Console.WriteLine($"This is the content: {result.Body.Content}");
+        }
+        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            Console.WriteLine("Document not found for submission");
         }
     }
 }

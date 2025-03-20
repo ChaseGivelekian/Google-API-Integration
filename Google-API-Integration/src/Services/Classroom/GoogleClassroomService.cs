@@ -2,7 +2,7 @@
 using Google.Apis.Classroom.v1;
 using Google.Apis.Classroom.v1.Data;
 
-namespace Google_Drive_Organizer.Services;
+namespace Google_Drive_Organizer.Services.Classroom;
 
 public class GoogleClassroomService(ClassroomService classroomService) : IGoogleClassroomService
 {
