@@ -1,7 +1,10 @@
-﻿using Google_Drive_Organizer.Interfaces;
+﻿using Google_Drive_Organizer.Exceptions;
+using Google_Drive_Organizer.Interfaces;
 using Google_Drive_Organizer.Services.Docs.DocsContentProcessing;
+using Google;
 using Google.Apis.Classroom.v1.Data;
 using Google.Apis.Docs.v1;
+using Google.Apis.Docs.v1.Data;
 
 namespace Google_Drive_Organizer.Services.Docs;
 
@@ -10,8 +13,10 @@ public class GoogleDocsService
     private readonly DocsService _docsService =
         GoogleCredentialsManager.CreateDocsServiceAsync().GetAwaiter().GetResult() ?? throw new NullReferenceException();
 
-    public async Task GetGoogleDoc(IList<StudentSubmission> work)
+    public async Task<List<Document>> GetGoogleDoc(IList<StudentSubmission> work)
     {
+        var results = new List<Document>();
+
         foreach (var studentSubmission in work)
         {
             // Get the attachment or link from the submission
@@ -24,27 +29,14 @@ public class GoogleDocsService
 
             try
             {
-                var result = await _docsService.Documents.Get(driveFileId).ExecuteAsync();
-                Console.WriteLine($"Retrieved document: {result.Title}");
+                 results.Add(await _docsService.Documents.Get(driveFileId).ExecuteAsync());
             }
-            catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (GoogleApiException e) when (e.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Console.WriteLine($"Document not found for submission: {studentSubmission.Id}");
+                throw new DocumentNotFoundException(driveFileId, e);
             }
         }
-    }
 
-    public async Task GetGoogleDocWithoutParameter()
-    {
-        try
-        {
-            var result = await _docsService.Documents.Get("1_a7fdEZFwkzUhGgFkqBvusqtb3L1csfBWJ8CyzhWWKs").ExecuteAsync();
-            Console.WriteLine($"Retrieved document: {result.Title}");
-            Console.WriteLine($"This is the content: {result.Body.Content}");
-        }
-        catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            Console.WriteLine("Document not found for submission");
-        }
+        return results;
     }
 }

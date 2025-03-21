@@ -6,7 +6,7 @@ using Google.Apis.Classroom.v1.Data;
 
 namespace Google_Drive_Organizer;
 
-public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, UserInputHandler inputHandler, GoogleDocsService googleDocsService)
+public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, UserInputHandler inputHandler, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
 {
     private readonly CourseWorkManager _courseWorkManager =
         courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
@@ -18,6 +18,8 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
 
     private readonly GoogleDocsService _googleDocsService = googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
+
+    private readonly GoogleDocsContentService _googleDocsContentService = googleDocsContentService ?? throw new ArgumentNullException(nameof(googleDocsContentService));
 
     public async Task RunAsync()
     {
@@ -114,9 +116,20 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         }
 
         if (courseNumber <= 0) return;
-        var courseToProcess = _inputHandler.GetIntegerInput("Which course would you like to process", 0, courseNumber);
+
+        // This gets the user input on which course to process
+        var courseToProcess = UserInputHandler.GetIntegerInput("Which course would you like to process?", 1, courseNumber);
+
+        // This gets the document for the selected course
         var selectedWorkItemIndex = displayedCourseIndices[courseToProcess - 1];
-        await _googleDocsService.GetGoogleDoc(submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id]);
+        var documents = await _googleDocsService.GetGoogleDoc(submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id]);
+
+        // This displays the content of the document
+        foreach (var document in documents)
+        {
+            var content = await _googleDocsContentService.ExtractDocumentContent(document);
+            Console.WriteLine(content);
+        }
     }
 
     private async Task DisplayCourseWorkInformation()

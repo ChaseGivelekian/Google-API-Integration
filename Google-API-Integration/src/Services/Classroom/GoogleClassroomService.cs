@@ -98,8 +98,7 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
 
         var result = new Dictionary<string, IList<StudentSubmission>>();
 
-        // Unfortunately, the Classroom API doesn't have a true batch endpoint for submissions
-        // We need to fetch each course work's submissions separately but can do so concurrently
+        // Fetches each course work's submissions separate but concurrently
         var tasks = courseWorkIds.Select(async courseWorkId =>
         {
             var submissions = await GetStudentSubmissionsForSpecificCourseWorkAsync(courseId, courseWorkId);

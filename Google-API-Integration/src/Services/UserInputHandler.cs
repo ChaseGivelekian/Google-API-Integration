@@ -31,8 +31,11 @@ public class UserInputHandler
                     return true;
                 case "n":
                     return false;
+                case "exit":
+                    Environment.Exit(0);
+                    break;
                 default:
-                    Console.WriteLine("Please enter y or n.");
+                    Console.WriteLine("Please enter 'y', 'n' or 'exit'.");
                     break;
             }
         }
@@ -45,17 +48,25 @@ public class UserInputHandler
     /// <param name="minValue">Minimum allowed value</param>
     /// <param name="maxValue">Maximum allowed value</param>
     /// <returns>Valid integer within range</returns>
-    public int GetIntegerInput(string prompt, int minValue = int.MinValue, int maxValue = int.MaxValue)
+    public static int GetIntegerInput(string prompt, int minValue = int.MinValue, int maxValue = int.MaxValue)
     {
         while (true)
         {
-            Console.Write($"{prompt}: ");
-            if (int.TryParse(Console.ReadLine(), out var result) && result >= minValue && result <= maxValue)
+            Console.Write($"{prompt} ");
+            var input = Console.ReadLine();
+            if (input?.ToLower() == "exit")
+            {
+                Environment.Exit(0);
+            }
+            if (int.TryParse(input, out var result) && result >= minValue && result <= maxValue)
             {
                 return result;
             }
 
-            Console.WriteLine($"Please enter a valid number between {minValue} and {maxValue}.");
+            if (minValue == maxValue)
+            {
+                Console.WriteLine($"Please enter {minValue} or type 'exit' to exit.");
+            }
         }
     }
 }
