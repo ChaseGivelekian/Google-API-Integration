@@ -22,7 +22,7 @@ public class BodyContentProcessor : IDocumentContentProcessor
             {
                 foreach (var paragraphElement in element.Paragraph.Elements)
                 {
-                    text.Append(ReadParagraphElement(paragraphElement));
+                    text.Append(await ReadParagraphElement(paragraphElement));
                 }
             }
             else if (element.Table != null)
@@ -44,9 +44,9 @@ public class BodyContentProcessor : IDocumentContentProcessor
         return text.ToString();
     }
 
-    private static Task<string> ReadParagraphElement(ParagraphElement paragraphElement)
+    private static async Task<string> ReadParagraphElement(ParagraphElement paragraphElement)
     {
-        return Task.FromResult(paragraphElement.TextRun?.Content ?? string.Empty);
+        return await Task.FromResult(paragraphElement.TextRun?.Content ?? string.Empty);
     }
 
 }
