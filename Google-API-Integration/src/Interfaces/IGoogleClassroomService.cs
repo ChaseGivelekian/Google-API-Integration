@@ -10,4 +10,5 @@ public interface IGoogleClassroomService
     Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId, string courseWorkId);
     Task<Dictionary<string, IList<StudentSubmission>>> GetStudentSubmissionsForMultipleCourseWorksAsync(
         string courseId, IList<string> courseWorkIds);
+    Task<string> GetCourseWorkDescriptionAsync(CourseWork work);
 }

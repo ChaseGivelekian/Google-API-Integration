@@ -6,7 +6,8 @@ namespace Google_Drive_Organizer.Services.Classroom;
 
 public class GoogleClassroomService(ClassroomService classroomService) : IGoogleClassroomService
 {
-    private readonly ClassroomService _classroomService = classroomService ?? throw new ArgumentNullException(nameof(classroomService));
+    private readonly ClassroomService _classroomService =
+        classroomService ?? throw new ArgumentNullException(nameof(classroomService));
 
     /// <summary>
     /// Gets a list of courses.
@@ -63,9 +64,10 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
     /// Gets the submissions for a specific course and coursework and returns them as a list.
     /// </summary>
     /// <param name="courseId">Identifier for the course/class</param>
-    /// <param name="courseWorkId">Identifier for the coursework.</param>
+    /// <param name="courseWorkId">Identifier for the coursework</param>
     /// <returns>Returns a list of student submissions.</returns>
-    public async Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId, string courseWorkId)
+    public async Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId,
+        string courseWorkId)
     {
         if (string.IsNullOrEmpty(courseWorkId))
         {
@@ -115,5 +117,17 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets the description of a course work.
+    /// </summary>
+    /// <param name="work">The Work object</param>
+    /// <returns>Returns a string with the course work description</returns>
+    public Task<string> GetCourseWorkDescriptionAsync(CourseWork work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+
+        return Task.FromResult(work.Description);
     }
 }

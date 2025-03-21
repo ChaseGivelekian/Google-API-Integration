@@ -42,7 +42,6 @@ public static class Program
         services.AddSingleton<IGoogleClassroomService, GoogleClassroomService>();
         services.AddSingleton<CourseWorkManager>();
         services.AddSingleton<ClassroomApplication>();
-        services.AddSingleton<UserInputHandler>();
         services.AddSingleton<GoogleDocsService>();
         services.AddSingleton<GoogleDocsContentService>();
 

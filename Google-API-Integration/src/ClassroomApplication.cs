@@ -6,16 +6,13 @@ using Google.Apis.Classroom.v1.Data;
 
 namespace Google_Drive_Organizer;
 
-public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, UserInputHandler inputHandler, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
+public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
 {
     private readonly CourseWorkManager _courseWorkManager =
         courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
 
     private readonly IGoogleClassroomService _googleClassroomService =
         googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
-
-    private readonly UserInputHandler _inputHandler =
-        inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
 
     private readonly GoogleDocsService _googleDocsService = googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
 
@@ -122,28 +119,18 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
 
         // This gets the document for the selected course
         var selectedWorkItemIndex = displayedCourseIndices[courseToProcess - 1];
-        var documents = await _googleDocsService.GetGoogleDoc(submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id]);
+        var workId = submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id];
+        var documents = await _googleDocsService.GetGoogleDoc(workId);
+
+        // This gets the chosen course work's description
+        // var courseWorkDescription = await _googleClassroomService.GetCourseWorkDescriptionAsync(workItems[selectedWorkItemIndex].work);
+        // Console.WriteLine(courseWorkDescription);
 
         // This displays the content of the document
         foreach (var document in documents)
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
             Console.WriteLine(content);
-        }
-    }
-
-    private async Task DisplayCourseWorkInformation()
-    {
-        var courses = await _courseWorkManager.GetAllCoursesWorkAsync();
-
-        foreach (var course in courses)
-        {
-            foreach (var work in course.Value)
-            {
-                if (!HasValidDueDate(work) || IsPastDue(work)) continue;
-
-                await DisplaySubmissionsWithDocsForCourseWork(course.Key, work);
-            }
         }
     }
 
@@ -171,39 +158,6 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         );
 
         return dueDateTime <= DateTime.Now;
-    }
-
-    private async Task DisplaySubmissionsWithDocsForCourseWork(string courseName, CourseWork work)
-    {
-        var submissions =
-            await _googleClassroomService.GetStudentSubmissionsForSpecificCourseWorkAsync(work.CourseId, work.Id);
-
-        var courseDisplayed = false;
-
-        foreach (var submission in submissions)
-        {
-            if (!IsActiveSubmission(submission) || !ContainsDocument(submission)) continue;
-
-            if (!courseDisplayed)
-            {
-                Console.WriteLine($"Course: {courseName}");
-
-                if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue && work.DueDate.Year.HasValue &&
-                    work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
-                {
-                    Console.WriteLine(
-                        $"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
-                }
-                else
-                {
-                    Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
-                }
-
-                courseDisplayed = true;
-            }
-
-            Console.WriteLine($"    - {submission.State}");
-        }
     }
 
     private static bool IsActiveSubmission(StudentSubmission submission)

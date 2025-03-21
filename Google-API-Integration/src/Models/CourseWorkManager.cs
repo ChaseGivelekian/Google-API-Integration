@@ -11,7 +11,7 @@ public class CourseWorkManager(IGoogleClassroomService classroomService)
     /// <summary>
     /// Gets the coursework for a specific course.
     /// </summary>
-    /// <param name="courseId">Id used to identify the course</param>
+    /// <param name="courseId">ID used to identify the course</param>
     /// <returns>Coursework for specified course</returns>
     public async Task<IList<CourseWork>> GetCourseWorksAsync(string courseId)
     {
