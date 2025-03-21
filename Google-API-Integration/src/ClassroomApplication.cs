@@ -123,8 +123,8 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         var documents = await _googleDocsService.GetGoogleDoc(workId);
 
         // This gets the chosen course work's description
-        // var courseWorkDescription = await _googleClassroomService.GetCourseWorkDescriptionAsync(workItems[selectedWorkItemIndex].work);
-        // Console.WriteLine(courseWorkDescription);
+        var courseWorkDescription = workItems[selectedWorkItemIndex].work.Description;
+        Console.WriteLine(courseWorkDescription);
 
         // This displays the content of the document
         foreach (var document in documents)
