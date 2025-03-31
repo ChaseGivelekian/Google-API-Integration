@@ -1,8 +1,8 @@
-﻿using Google_Drive_Organizer.Interfaces;
+﻿using Google_API_Integration.Interfaces;
 using Google.Apis.Drive.v3;
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace Google_Drive_Organizer.Services.Drive;
+namespace Google_API_Integration.Services.Drive;
 
 public class GoogleDriveService(DriveService driveService) : IGoogleDriveService
 {

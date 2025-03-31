@@ -4,8 +4,9 @@ using Google.Apis.Docs.v1;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Google.Apis.YouTube.v3;
 
-namespace Google_Drive_Organizer.Services;
+namespace Google_API_Integration.Services;
 
 public static class GoogleCredentialsManager
 {
@@ -62,10 +63,27 @@ public static class GoogleCredentialsManager
         });
     }
 
+    /// <summary>
+    /// Creates a Docs service asynchronously.
+    /// </summary>
+    /// <returns>Returns a new DocService</returns>
     public static async Task<DocsService> CreateDocsServiceAsync()
     {
         var credential = await GetUserCredentialAsync();
         return new DocsService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential
+        });
+    }
+
+    /// <summary>
+    /// Creates a YouTube service asynchronously.
+    /// </summary>
+    /// <returns>Returns a new YouTubeService</returns>
+    public static async Task<YouTubeService> CreateYouTubeServiceAsync()
+    {
+        var credential = await GetUserCredentialAsync();
+        return new YouTubeService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential
         });

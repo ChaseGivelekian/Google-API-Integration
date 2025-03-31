@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using Google_Drive_Organizer.Interfaces;
+using Google_API_Integration.Interfaces;
 using Google.Apis.Docs.v1.Data;
 
-namespace Google_Drive_Organizer.Services.Docs.DocsContentProcessing;
+namespace Google_API_Integration.Services.Docs.DocsContentProcessing;
 
 public class BodyContentProcessor : IDocumentContentProcessor
 {

@@ -1,8 +1,8 @@
-﻿using Google_Drive_Organizer.Interfaces;
+﻿using Google_API_Integration.Interfaces;
 using Google.Apis.Classroom.v1;
 using Google.Apis.Classroom.v1.Data;
 
-namespace Google_Drive_Organizer.Services.Classroom;
+namespace Google_API_Integration.Services.Classroom;
 
 public class GoogleClassroomService(ClassroomService classroomService) : IGoogleClassroomService
 {

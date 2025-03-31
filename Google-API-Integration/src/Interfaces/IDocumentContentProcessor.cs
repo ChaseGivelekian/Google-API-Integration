@@ -1,6 +1,6 @@
 ﻿using Google.Apis.Docs.v1.Data;
 
-namespace Google_Drive_Organizer.Interfaces;
+namespace Google_API_Integration.Interfaces;
 
 public interface IDocumentContentProcessor
 {

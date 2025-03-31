@@ -1,11 +1,11 @@
-﻿using Google_Drive_Organizer.Interfaces;
-using Google_Drive_Organizer.Models;
-using Google_Drive_Organizer.Services;
-using Google_Drive_Organizer.Services.Classroom;
-using Google_Drive_Organizer.Services.Docs;
+﻿using Google_API_Integration.Interfaces;
+using Google_API_Integration.Models;
+using Google_API_Integration.Services;
+using Google_API_Integration.Services.AttachmentTextExtraction;
+using Google_API_Integration.Services.Docs;
 using Google.Apis.Classroom.v1.Data;
 
-namespace Google_Drive_Organizer;
+namespace Google_API_Integration;
 
 public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
 {

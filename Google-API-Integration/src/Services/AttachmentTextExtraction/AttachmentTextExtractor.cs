@@ -1,7 +1,7 @@
-﻿using Google.Apis.Classroom.v1.Data;
-using Aspose.Words;
+﻿using Aspose.Words;
+using Google.Apis.Classroom.v1.Data;
 
-namespace Google_Drive_Organizer.Services.Classroom;
+namespace Google_API_Integration.Services.AttachmentTextExtraction;
 
 public static class AttachmentTextExtractor
 {
@@ -20,19 +20,18 @@ public static class AttachmentTextExtractor
 
             if (material.YoutubeVideo != null)
             {
-                // TODO - Implement Youtube video caption extraction
                 attachmentText.Add(await ExtractTextFromYoutubeVideoAsync(material.YoutubeVideo));
             }
 
             if (material.Link != null)
             {
-                // TODO - Implement link extraction
-                attachmentText.Add(await ExtractTextFromLinkAsync(material.Link));
+                var extractedText = await ExtractTextFromLinkAsync(material.Link);
+
+                attachmentText.Add($"This is the text from the {material.Link.Title} attachment: {(string.IsNullOrWhiteSpace(extractedText) ? "This file has no content" : extractedText)}");
             }
 
             if (material.Form != null)
             {
-                // TODO - Implement form extraction
                 attachmentText.Add(await ExtractTextFromFormAsync(material.Form));
             }
         }
@@ -42,17 +41,17 @@ public static class AttachmentTextExtractor
 
     private static async Task<string> ExtractTextFromFormAsync(Form form)
     {
-        throw new NotImplementedException();
+        return await GoogleFormTextExtraction.ExtractTextFromGoogleFormIdAsync(form.FormUrl);
     }
 
     private static async Task<string> ExtractTextFromLinkAsync(Link link)
     {
-        throw new NotImplementedException();
+        return await new HttpClient().GetStringAsync(link.Url);
     }
 
     private static async Task<string> ExtractTextFromYoutubeVideoAsync(YouTubeVideo youtubeVideo)
     {
-        throw new NotImplementedException();
+        return await YoutubeCaptionExtraction.ExtractTextFromYoutubeIdAsync(youtubeVideo.Id);
     }
 
     private static async Task<string> ExtractTextFromDriveFileAsync(SharedDriveFile sharedDriveFile)

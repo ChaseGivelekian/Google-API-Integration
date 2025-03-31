@@ -1,12 +1,12 @@
-﻿using Google_Drive_Organizer.Exceptions;
-using Google_Drive_Organizer.Interfaces;
-using Google_Drive_Organizer.Services.Docs.DocsContentProcessing;
+﻿using Google_API_Integration.Exceptions;
+using Google_API_Integration.Interfaces;
+using Google_API_Integration.Services.Docs.DocsContentProcessing;
 using Google;
 using Google.Apis.Classroom.v1.Data;
 using Google.Apis.Docs.v1;
 using Google.Apis.Docs.v1.Data;
 
-namespace Google_Drive_Organizer.Services.Docs;
+namespace Google_API_Integration.Services.Docs;
 
 public class GoogleDocsService
 {

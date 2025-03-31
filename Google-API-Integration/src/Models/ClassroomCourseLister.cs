@@ -1,7 +1,7 @@
-﻿using Google_Drive_Organizer.Interfaces;
+﻿using Google_API_Integration.Interfaces;
 using Google.Apis.Classroom.v1.Data;
 
-namespace Google_Drive_Organizer.Models;
+namespace Google_API_Integration.Models;
 
 public class ClassroomCourseLister(IGoogleClassroomService classroomService)
 {

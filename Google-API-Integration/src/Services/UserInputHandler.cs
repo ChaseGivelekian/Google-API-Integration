@@ -1,4 +1,4 @@
-﻿namespace Google_Drive_Organizer.Services;
+﻿namespace Google_API_Integration.Services;
 
 public class UserInputHandler
 {

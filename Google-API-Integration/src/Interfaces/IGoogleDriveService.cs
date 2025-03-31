@@ -1,6 +1,6 @@
 ﻿using File = Google.Apis.Drive.v3.Data.File;
 
-namespace Google_Drive_Organizer.Interfaces;
+namespace Google_API_Integration.Interfaces;
 
 public interface IGoogleDriveService
 {
