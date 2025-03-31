@@ -1,6 +1,7 @@
 ﻿using Google_Drive_Organizer.Interfaces;
 using Google_Drive_Organizer.Models;
 using Google_Drive_Organizer.Services;
+using Google_Drive_Organizer.Services.Classroom;
 using Google_Drive_Organizer.Services.Docs;
 using Google.Apis.Classroom.v1.Data;
 
@@ -131,6 +132,14 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
             Console.WriteLine(content);
+        }
+
+        // This gets the text from attachments
+        var attachmentText = await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
+        Console.WriteLine("This is the text from the attachments:");
+        foreach (var text in attachmentText)
+        {
+            Console.WriteLine(text);
         }
     }
 

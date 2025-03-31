@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspose.Words" Version="25.3.0" />
         <PackageReference Include="Google.Apis.Classroom.v1" Version="1.69.0.3714" />
         <PackageReference Include="Google.Apis.Docs.v1" Version="1.69.0.3701" />
         <PackageReference Include="Google.Apis.Drive.v3" Version="1.69.0.3703" />
