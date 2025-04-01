@@ -7,28 +7,32 @@ public static class AttachmentTextExtractor
 {
     public static async Task<List<string>> ExtractTextFromAttachmentsAsync(CourseWork courseWork)
     {
-         List<string> attachmentText = [];
+        List<string> attachmentText = [];
 
         foreach (var material in courseWork.Materials)
         {
             if (material.DriveFile != null)
             {
-                attachmentText.Add($"This is the text from the {material.DriveFile.DriveFile.Title} attachment: {await ExtractTextFromDriveFileAsync(material.DriveFile)}");
+                attachmentText.Add(
+                    $"This is the text from the {material.DriveFile.DriveFile.Title} attachment: {await ExtractTextFromDriveFileAsync(material.DriveFile)}");
             }
 
             if (material.YoutubeVideo != null)
             {
-                attachmentText.Add(await ExtractTextFromYoutubeVideoAsync(material.YoutubeVideo));
+                attachmentText.Add(
+                    $"This is the text from the {material.YoutubeVideo.Title} attachment: {await ExtractTextFromYoutubeVideoAsync(material.YoutubeVideo)}");
             }
 
             if (material.Link != null)
             {
-                attachmentText.Add($"This is the text from the {material.Link.Title} attachment: {await ExtractTextFromLinkAsync(material.Link)}");
+                attachmentText.Add(
+                    $"This is the text from the {material.Link.Title} attachment: {await ExtractTextFromLinkAsync(material.Link)}");
             }
 
             if (material.Form != null)
             {
-                attachmentText.Add(await ExtractTextFromFormAsync(material.Form));
+                attachmentText.Add(
+                    $"This is the text from the {material.Form.Title} attachment: {await ExtractTextFromFormAsync(material.Form)}");
             }
         }
 

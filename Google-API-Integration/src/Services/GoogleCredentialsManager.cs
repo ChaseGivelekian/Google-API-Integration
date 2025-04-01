@@ -2,6 +2,7 @@
 using Google.Apis.Classroom.v1;
 using Google.Apis.Docs.v1;
 using Google.Apis.Drive.v3;
+using Google.Apis.Forms.v1;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
@@ -85,6 +86,19 @@ public static class GoogleCredentialsManager
     {
         var credential = await GetUserCredentialAsync();
         return new YouTubeService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential
+        });
+    }
+
+    /// <summary>
+    /// Creates a Forms service asynchronously.
+    /// </summary>
+    /// <returns>Returns a new FormsService</returns>
+    public static async Task<FormsService> CreateFormsServiceAsync()
+    {
+        var credential = await GetUserCredentialAsync();
+        return new FormsService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential
         });
