@@ -14,7 +14,8 @@ public static class GoogleCredentialsManager
     [
         DriveService.Scope.Drive,
         ClassroomService.Scope.ClassroomCoursesReadonly,
-        ClassroomService.Scope.ClassroomCourseworkMeReadonly
+        ClassroomService.Scope.ClassroomCourseworkMeReadonly,
+        YouTubeService.Scope.YoutubeReadonly
     ];
 
     private const string CredentialsPath = "credentials.json";

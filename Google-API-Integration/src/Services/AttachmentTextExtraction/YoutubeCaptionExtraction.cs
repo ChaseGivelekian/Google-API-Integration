@@ -1,15 +1,29 @@
-﻿using Google.Apis.YouTube.v3;
+﻿using System.Text;
+using Google.Apis.YouTube.v3;
 
 namespace Google_API_Integration.Services.AttachmentTextExtraction;
 
-public class YoutubeCaptionExtraction
+public static class YoutubeCaptionExtraction
 {
-    private readonly YouTubeService _youTubeService = GoogleCredentialsManager.CreateYouTubeServiceAsync().GetAwaiter().GetResult() ?? throw new NullReferenceException();
+    private static readonly YouTubeService YouTubeService = GoogleCredentialsManager.CreateYouTubeServiceAsync().GetAwaiter().GetResult() ?? throw new NullReferenceException();
 
     public static async Task<string> ExtractTextFromYoutubeIdAsync(string youtubeId)
     {
-        // TODO - Implement Youtube video caption extraction
-        // This is a placeholder implementation
-        return await Task.FromResult($"This is the text from the Youtube video with ID: {youtubeId}");
+        var captionsListRequest = YouTubeService.Captions.List("snippet", youtubeId);
+        var captionsListResponse = await captionsListRequest.ExecuteAsync();
+
+        if (captionsListResponse.Items == null || !captionsListResponse.Items.Any())
+        {
+            return "No captions available for this video.";
+        }
+
+        var captionTrack = captionsListResponse.Items.First();
+
+        using var captionsStream = new MemoryStream();
+        await YouTubeService.Captions.Download(captionTrack.Id).DownloadAsync(captionsStream);
+
+        captionsStream.Position = 0;
+        using var reader = new StreamReader(captionsStream, Encoding.UTF8);
+        return await reader.ReadToEndAsync();
     }
 }

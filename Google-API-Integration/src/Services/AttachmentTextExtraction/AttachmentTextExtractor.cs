@@ -13,9 +13,7 @@ public static class AttachmentTextExtractor
         {
             if (material.DriveFile != null)
             {
-                var extractedText = await ExtractTextFromDriveFileAsync(material.DriveFile);
-
-                attachmentText.Add($"This is the text from the {material.DriveFile.DriveFile.Title} attachment: {(string.IsNullOrWhiteSpace(extractedText) ? "This file has no content" : extractedText)}");
+                attachmentText.Add($"This is the text from the {material.DriveFile.DriveFile.Title} attachment: {await ExtractTextFromDriveFileAsync(material.DriveFile)}");
             }
 
             if (material.YoutubeVideo != null)
@@ -25,9 +23,7 @@ public static class AttachmentTextExtractor
 
             if (material.Link != null)
             {
-                var extractedText = await ExtractTextFromLinkAsync(material.Link);
-
-                attachmentText.Add($"This is the text from the {material.Link.Title} attachment: {(string.IsNullOrWhiteSpace(extractedText) ? "This file has no content" : extractedText)}");
+                attachmentText.Add($"This is the text from the {material.Link.Title} attachment: {await ExtractTextFromLinkAsync(material.Link)}");
             }
 
             if (material.Form != null)
@@ -46,7 +42,9 @@ public static class AttachmentTextExtractor
 
     private static async Task<string> ExtractTextFromLinkAsync(Link link)
     {
-        return await new HttpClient().GetStringAsync(link.Url);
+        var extractedText = await new HttpClient().GetStringAsync(link.Url);
+
+        return string.IsNullOrWhiteSpace(extractedText) ? "This link has no content" : extractedText;
     }
 
     private static async Task<string> ExtractTextFromYoutubeVideoAsync(YouTubeVideo youtubeVideo)
@@ -66,6 +64,7 @@ public static class AttachmentTextExtractor
 
         // Load the document and extract text
         var doc = new Document(stream);
-        return doc.GetText();
+        var extractedText = doc.GetText();
+        return string.IsNullOrWhiteSpace(extractedText) ? "This file has no content" : extractedText;
     }
 }
