@@ -139,6 +139,9 @@ public class ClassroomApplication(
 
         if (courseNumber <= 0) return;
 
+        // Variable that stores all the assignment's information for the AI to use later.
+        var assignmentInformation = new Dictionary<string, string>();
+
         // This gets the user input on which course to process
         var courseToProcess =
             UserInputHandler.GetIntegerInput("Which course would you like to process?", 1, courseNumber);
@@ -150,27 +153,32 @@ public class ClassroomApplication(
 
         // This gets the chosen course work's description
         var courseWorkDescription = workItems[selectedWorkItemIndex].work.Description;
-        Console.WriteLine(courseWorkDescription);
+        // Console.WriteLine(courseWorkDescription);
+        assignmentInformation.Add("This is the assignment description", courseWorkDescription);
 
         // This displays the content of the document
         foreach (var document in documents)
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
-            Console.WriteLine(content);
+            // Console.WriteLine(content);
+            assignmentInformation.Add("This is the document content", content);
 
             // This sends the content to the Gemini API for analysis
-            var analysis = await _geminiService.AnalyzeDocumentContentAsync(content);
-            Console.WriteLine($"AI analysis of the document:\n{analysis}");
+            // var analysis = await _geminiService.AnalyzeDocumentContentAsync(content);
+            // Console.WriteLine($"AI analysis of the document:\n{analysis}");
         }
 
         // This gets the text from attachments
         var attachmentText =
             await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
-        Console.WriteLine("This is the text from the attachments:");
+        // Console.WriteLine("This is the text from the attachments:");
         foreach (var text in attachmentText)
         {
-            Console.WriteLine(text);
+            // Console.WriteLine(text);
+            assignmentInformation.Add("This is the text from the attachments on the assignment", text);
         }
+
+        Console.WriteLine(await _geminiService.CompleteAssignment(assignmentInformation));
     }
 
     private static bool HasValidDueDate(CourseWork work)

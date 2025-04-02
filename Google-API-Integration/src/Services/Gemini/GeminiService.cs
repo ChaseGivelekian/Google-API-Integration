@@ -12,7 +12,8 @@ public class GeminiService(string apiKey) : IGeminiService
     private const string ApiBaseUrl =
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-    public async Task<string> GenerateContentAsync(string prompt)
+    public async Task<string> GenerateContentAsync(string prompt,
+        string systemPrompt = "Don't use asterisks in your response.")
     {
         var requestContent = new
         {
@@ -20,7 +21,7 @@ public class GeminiService(string apiKey) : IGeminiService
             {
                 parts = new[]
                 {
-                    new { text = "Don't use asterisks in your response." }
+                    new { text = systemPrompt }
                 }
             },
             contents = new[]
@@ -41,6 +42,13 @@ public class GeminiService(string apiKey) : IGeminiService
     public async Task<string> AnalyzeDocumentContentAsync(string documentContent)
     {
         var prompt = $"Analyze the following document content: {documentContent}";
+        return await GenerateContentAsync(prompt);
+    }
+
+    public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation)
+    {
+        var prompt =
+            $"Complete this assignment based on the following information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
         return await GenerateContentAsync(prompt);
     }
 
