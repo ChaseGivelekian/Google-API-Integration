@@ -52,18 +52,32 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         }
 
         // Process each course in batch
+        // Collect all submissions first
+        Dictionary<string, List<(string courseName, CourseWork work)>> workItemsByCourse = new();
+        Dictionary<string, IList<StudentSubmission>> allSubmissionsByCourseWork = new();
+
         foreach (var (courseId, workItems) in validWorkByCourse)
         {
             // Get all courseWork IDs for this course
             var courseWorkIds = workItems.Select(w => w.work.Id).ToList();
 
             // Batch fetches all submissions for this course's work items
-            var allSubmissions =
+            var submissions =
                 await _googleClassroomService.GetStudentSubmissionsForMultipleCourseWorksAsync(courseId, courseWorkIds);
 
-            // Process results
-            await DisplayBatchedSubmissions(workItems, allSubmissions);
+            // Store work items by course ID for later processing
+            workItemsByCourse[courseId] = workItems;
+
+            // Add all submissions to the allSubmissionsByCourseWork dictionary
+            foreach (var entry in submissions)
+            {
+                allSubmissionsByCourseWork[entry.Key] = entry.Value;
+            }
         }
+
+        // Process all results at once
+        var allWorkItems = workItemsByCourse.Values.SelectMany(items => items).ToList();
+        await DisplayBatchedSubmissions(allWorkItems, allSubmissionsByCourseWork);
     }
 
     private async Task DisplayBatchedSubmissions(
