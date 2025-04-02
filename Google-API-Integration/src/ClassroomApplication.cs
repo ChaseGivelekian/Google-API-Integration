@@ -157,6 +157,8 @@ public class ClassroomApplication(
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
             Console.WriteLine(content);
+
+            // This sends the content to the Gemini API for analysis
             var analysis = await _geminiService.AnalyzeDocumentContentAsync(content);
             Console.WriteLine($"AI analysis of the document:\n{analysis}");
         }

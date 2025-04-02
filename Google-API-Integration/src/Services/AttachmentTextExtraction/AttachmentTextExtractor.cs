@@ -9,6 +9,11 @@ public static class AttachmentTextExtractor
     {
         List<string> attachmentText = [];
 
+        if (courseWork.Materials is null)
+        {
+            return ["This course work has no attachments"];
+        }
+
         foreach (var material in courseWork.Materials)
         {
             if (material.DriveFile != null)

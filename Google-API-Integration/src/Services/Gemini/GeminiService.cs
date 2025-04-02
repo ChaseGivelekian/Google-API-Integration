@@ -16,6 +16,13 @@ public class GeminiService(string apiKey) : IGeminiService
     {
         var requestContent = new
         {
+            system_instruction = new
+            {
+                parts = new[]
+                {
+                    new { text = "Don't use asterisks in your response." }
+                }
+            },
             contents = new[]
             {
                 new
