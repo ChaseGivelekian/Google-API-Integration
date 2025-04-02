@@ -7,7 +7,12 @@ using Google.Apis.Classroom.v1.Data;
 
 namespace Google_API_Integration;
 
-public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
+public class ClassroomApplication(
+    CourseWorkManager courseWorkManager,
+    IGoogleClassroomService googleClassroomService,
+    GoogleDocsService googleDocsService,
+    GoogleDocsContentService googleDocsContentService,
+    IGeminiService geminiService)
 {
     private readonly CourseWorkManager _courseWorkManager =
         courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
@@ -15,9 +20,14 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
     private readonly IGoogleClassroomService _googleClassroomService =
         googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
 
-    private readonly GoogleDocsService _googleDocsService = googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
+    private readonly GoogleDocsService _googleDocsService =
+        googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
 
-    private readonly GoogleDocsContentService _googleDocsContentService = googleDocsContentService ?? throw new ArgumentNullException(nameof(googleDocsContentService));
+    private readonly GoogleDocsContentService _googleDocsContentService =
+        googleDocsContentService ?? throw new ArgumentNullException(nameof(googleDocsContentService));
+
+    private readonly IGeminiService _geminiService =
+        geminiService ?? throw new ArgumentNullException(nameof(geminiService));
 
     public async Task RunAsync()
     {
@@ -130,7 +140,8 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         if (courseNumber <= 0) return;
 
         // This gets the user input on which course to process
-        var courseToProcess = UserInputHandler.GetIntegerInput("Which course would you like to process?", 1, courseNumber);
+        var courseToProcess =
+            UserInputHandler.GetIntegerInput("Which course would you like to process?", 1, courseNumber);
 
         // This gets the document for the selected course
         var selectedWorkItemIndex = displayedCourseIndices[courseToProcess - 1];
@@ -146,10 +157,13 @@ public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleCl
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
             Console.WriteLine(content);
+            var analysis = await _geminiService.AnalyzeDocumentContentAsync(content);
+            Console.WriteLine($"AI analysis of the document:\n{analysis}");
         }
 
         // This gets the text from attachments
-        var attachmentText = await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
+        var attachmentText =
+            await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
         Console.WriteLine("This is the text from the attachments:");
         foreach (var text in attachmentText)
         {

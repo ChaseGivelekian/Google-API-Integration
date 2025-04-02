@@ -3,6 +3,8 @@ using Google_API_Integration.Models;
 using Google_API_Integration.Services;
 using Google_API_Integration.Services.Classroom;
 using Google_API_Integration.Services.Docs;
+using Google_API_Integration.Services.Gemini;
+using Google_API_Integration.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Google_API_Integration;
@@ -44,6 +46,8 @@ public static class Program
         services.AddSingleton<ClassroomApplication>();
         services.AddSingleton<GoogleDocsService>();
         services.AddSingleton<GoogleDocsContentService>();
+        var geminiApiKey = ConfigurationHelper.GetGeminiApiKey();
+        services.AddSingleton<IGeminiService>(new GeminiService(geminiApiKey));
 
         return services.BuildServiceProvider();
     }
