@@ -7,11 +7,7 @@ using Google.Apis.Classroom.v1.Data;
 
 namespace Google_API_Integration;
 
-public class ClassroomApplication(
-    CourseWorkManager courseWorkManager,
-    IGoogleClassroomService googleClassroomService,
-    GoogleDocsService googleDocsService,
-    GoogleDocsContentService googleDocsContentService)
+public class ClassroomApplication(CourseWorkManager courseWorkManager, IGoogleClassroomService googleClassroomService, GoogleDocsService googleDocsService, GoogleDocsContentService googleDocsContentService)
 {
     private readonly CourseWorkManager _courseWorkManager =
         courseWorkManager ?? throw new ArgumentNullException(nameof(courseWorkManager));
@@ -19,11 +15,9 @@ public class ClassroomApplication(
     private readonly IGoogleClassroomService _googleClassroomService =
         googleClassroomService ?? throw new ArgumentNullException(nameof(googleClassroomService));
 
-    private readonly GoogleDocsService _googleDocsService =
-        googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
+    private readonly GoogleDocsService _googleDocsService = googleDocsService ?? throw new ArgumentNullException(nameof(googleDocsService));
 
-    private readonly GoogleDocsContentService _googleDocsContentService =
-        googleDocsContentService ?? throw new ArgumentNullException(nameof(googleDocsContentService));
+    private readonly GoogleDocsContentService _googleDocsContentService = googleDocsContentService ?? throw new ArgumentNullException(nameof(googleDocsContentService));
 
     public async Task RunAsync()
     {
@@ -86,86 +80,61 @@ public class ClassroomApplication(
         await DisplayBatchedSubmissions(allWorkItems, allSubmissionsByCourseWork);
     }
 
-    private static (int courseNumber,
-        List<(List<(string courseName, CourseWork work)> workItems,
-            Dictionary<string, IList<StudentSubmission>> submissions)> coursesList,
-        List<int> displayedCourseIndices) DisplayAllCourses(
-            List<(string courseId,
-                List<(string courseName, CourseWork work)> workItems,
-                Dictionary<string, IList<StudentSubmission>> submissions)> allDisplayData)
+    private async Task DisplayBatchedSubmissions(
+        List<(string courseName, CourseWork work)> workItems,
+        Dictionary<string, IList<StudentSubmission>> submissionsByCourseWorkId)
     {
         var courseNumber = 0;
         var displayedCourseIndices = new List<int>();
-        var coursesList = new List<(List<(string courseName, CourseWork work)> workItems,
-            Dictionary<string, IList<StudentSubmission>> submissions)>();
 
-        foreach (var (_, workItems, submissions) in allDisplayData)
+        for (var i = 0; i < workItems.Count; i++)
         {
-            coursesList.Add((workItems, submissions));
+            var (courseName, work) = workItems[i];
 
-            for (var i = 0; i < workItems.Count; i++)
+            if (!submissionsByCourseWorkId.TryGetValue(work.Id, out var submissions))
+                continue;
+
+            var courseDisplayed = true;
+
+            foreach (var submission in submissions)
             {
-                var (courseName, work) = workItems[i];
-
-                if (!submissions.TryGetValue(work.Id, out var courseSubmissions))
+                if (!IsActiveSubmission(submission) || !ContainsDocument(submission))
                     continue;
 
-                var courseDisplayed = true;
-
-                foreach (var submission in courseSubmissions)
+                if (courseDisplayed)
                 {
-                    if (!IsActiveSubmission(submission))
-                        continue;
+                    courseNumber++;
+                    displayedCourseIndices.Add(i);
 
-                    if (courseDisplayed)
+                    Console.WriteLine($"{courseNumber}. Course: {courseName}");
+
+                    if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue &&
+                        work.DueDate.Year.HasValue &&
+                        work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
                     {
-                        courseNumber++;
-                        displayedCourseIndices.Add(i);
-
-                        Console.WriteLine($"{courseNumber}. Course: {courseName}");
-
-                        if (work.DueDate?.Month.HasValue == true && work.DueDate.Day.HasValue &&
-                            work.DueDate.Year.HasValue &&
-                            work.DueTime?.Hours.HasValue == true && work.DueTime.Minutes.HasValue)
-                        {
-                            Console.WriteLine(
-                                $"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
-                        }
-
-                        courseDisplayed = false;
+                        Console.WriteLine(
+                            $"  - {work.Title} (Due: {work.DueDate.Month.Value}-{work.DueDate.Day.Value}-{work.DueDate.Year.Value} {work.DueTime.Hours.Value}:{work.DueTime.Minutes.Value:D2})");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  - {work.Title} (Due date not fully specified)");
                     }
 
-                    Console.WriteLine($"    - {submission.State}");
+                    courseDisplayed = false;
                 }
+
+                Console.WriteLine($"    - {submission.State}");
             }
         }
 
-        return (courseNumber, coursesList, displayedCourseIndices);
-    }
+        if (courseNumber <= 0) return;
 
-    private async Task ProcessSelectedCourse(
-        List<(List<(string courseName, CourseWork work)> workItems,
-            Dictionary<string, IList<StudentSubmission>> submissions)> coursesList,
-        List<int> displayedCourseIndices)
-    {
-        // Get user input on which course to process
-        var courseToProcess = UserInputHandler.GetIntegerInput("Which course would you like to process?", 1,
-            displayedCourseIndices.Count);
+        // This gets the user input on which course to process
+        var courseToProcess = UserInputHandler.GetIntegerInput("Which course would you like to process?", 1, courseNumber);
 
-        // Get the correct course list index
-        var courseListIndex = courseToProcess - 1;
-
-        // Get the selected work item index
+        // This gets the document for the selected course
         var selectedWorkItemIndex = displayedCourseIndices[courseToProcess - 1];
-
-        var workItems = coursesList[courseListIndex].workItems;
-        var submissions = coursesList[courseListIndex].submissions;
-
-        var workId = submissions[workItems[selectedWorkItemIndex].work.Id];
+        var workId = submissionsByCourseWorkId[workItems[selectedWorkItemIndex].work.Id];
         var documents = await _googleDocsService.GetGoogleDoc(workId);
 
         // This gets the chosen course work's description
@@ -180,8 +149,7 @@ public class ClassroomApplication(
         }
 
         // This gets the text from attachments
-        var attachmentText =
-            await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
+        var attachmentText = await AttachmentTextExtractor.ExtractTextFromAttachmentsAsync(workItems[selectedWorkItemIndex].work);
         Console.WriteLine("This is the text from the attachments:");
         foreach (var text in attachmentText)
         {
@@ -197,39 +165,28 @@ public class ClassroomApplication(
     private static bool IsPastDue(CourseWork work)
     {
         // Ensure all required values are present
-        if (!work.DueDate.Year.HasValue || !work.DueDate.Month.HasValue || !work.DueDate.Day.HasValue)
+        if (!work.DueDate.Year.HasValue || !work.DueDate.Month.HasValue || !work.DueDate.Day.HasValue ||
+            !work.DueTime.Hours.HasValue || !work.DueTime.Minutes.HasValue)
         {
             return false; // Can't determine if it's past due without complete date/time
         }
 
-        // If we have complete date and time information
-        if (work.DueTime is { Hours: not null, Minutes: not null })
-        {
-            var dueDateTime = new DateTime(
-                work.DueDate.Year.Value,
-                work.DueDate.Month.Value,
-                work.DueDate.Day.Value,
-                work.DueTime.Hours.Value,
-                work.DueTime.Minutes.Value,
-                0
-            );
-            return dueDateTime <= DateTime.Now;
-        }
-
-        // If we only have date information without time
-        var dueDate = new DateTime(
+        var dueDateTime = new DateTime(
             work.DueDate.Year.Value,
             work.DueDate.Month.Value,
-            work.DueDate.Day.Value
+            work.DueDate.Day.Value,
+            work.DueTime.Hours.Value,
+            work.DueTime.Minutes.Value,
+            0
         );
-        return dueDate.Date < DateTime.Now.Date ||
-               (dueDate.Date == DateTime.Now.Date && DateTime.Now.TimeOfDay > TimeSpan.Zero);
+
+        return dueDateTime <= DateTime.Now;
     }
 
     private static bool IsActiveSubmission(StudentSubmission submission)
     {
         // Check if submission is in one of the active states
-        return submission.State is "NEW" or "CREATED" or "RECLAIMED_BY_STUDENT";
+        return submission.State is "NEW" or "CREATED";
     }
 
     private static bool ContainsDocument(StudentSubmission submission)
