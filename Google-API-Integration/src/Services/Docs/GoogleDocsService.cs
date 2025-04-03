@@ -1,6 +1,5 @@
 ﻿using Google_API_Integration.Exceptions;
-using Google_API_Integration.Interfaces;
-using Google_API_Integration.Services.Docs.DocsContentProcessing;
+using Google_API_Integration.Services.Docs.Formatting;
 using Google;
 using Google.Apis.Classroom.v1.Data;
 using Google.Apis.Docs.v1;
@@ -11,7 +10,8 @@ namespace Google_API_Integration.Services.Docs;
 public class GoogleDocsService
 {
     private readonly DocsService _docsService =
-        GoogleCredentialsManager.CreateDocsServiceAsync().GetAwaiter().GetResult() ?? throw new NullReferenceException();
+        GoogleCredentialsManager.CreateDocsServiceAsync().GetAwaiter().GetResult() ??
+        throw new NullReferenceException();
 
     public async Task<List<Document>> GetGoogleDoc(IList<StudentSubmission> work)
     {
@@ -29,7 +29,7 @@ public class GoogleDocsService
 
             try
             {
-                 results.Add(await _docsService.Documents.Get(driveFileId).ExecuteAsync());
+                results.Add(await _docsService.Documents.Get(driveFileId).ExecuteAsync());
             }
             catch (GoogleApiException e) when (e.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -38,5 +38,34 @@ public class GoogleDocsService
         }
 
         return results;
+    }
+
+    public async Task UpdateDocumentFromAiResponse(string aiResponse, string documentId)
+    {
+        // Convert the AI response to Google Docs API format
+        var requests = GoogleDocsFormatter.ConvertAiResponseToRequestsFormat(aiResponse);
+
+        // Apply the formatting to the document
+        await BatchUpdateDocumentAsync(documentId, requests);
+    }
+
+    private async Task BatchUpdateDocumentAsync(string documentId, IList<Request> requests)
+    {
+        // Create a batch update request
+        var batchUpdateRequest = new BatchUpdateDocumentRequest
+        {
+            Requests = requests
+        };
+
+        // Execute the batch update
+        try
+        {
+            await _docsService.Documents.BatchUpdate(batchUpdateRequest, documentId).ExecuteAsync();
+        }
+        catch (GoogleApiException ex)
+        {
+            // Handle specific API errors
+            throw new Exception($"Error updating document: {ex.Message}", ex);
+        }
     }
 }

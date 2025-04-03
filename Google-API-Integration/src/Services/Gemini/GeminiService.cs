@@ -13,7 +13,7 @@ public class GeminiService(string apiKey) : IGeminiService
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
     public async Task<string> GenerateContentAsync(string prompt,
-        string systemPrompt = "Don't use asterisks in your response.")
+        string systemPrompt = "")
     {
         var requestContent = new
         {
@@ -21,7 +21,33 @@ public class GeminiService(string apiKey) : IGeminiService
             {
                 parts = new[]
                 {
-                    new { text = systemPrompt }
+                    new
+                    {
+                        text = """
+                               Format your response using the following structure:
+                               1. Use 'FONT: ' to indicate the style of the response and end with ' :FONT_END' Put this at the end of the response.
+                               2. Use 'SPACING: ' to indicate the spacing of the response and end with ' :SPACING_END' Put this at the end of the response.
+                               3. Use 'SIZE: ' to indicate the size of the response and end with ' :SIZE_END' Put this at the end of the response.
+                               4. Use '## HEADING: ' for section headings and end with ' :HEADING_END'
+                               5. Use '### SUBHEADING: ' for subsection headings and end with ' :SUBHEADING_END'
+                               6. Use 'PARAGRAPH: ' to start paragraphs and end with ' :PARAGRAPH_END'
+                               7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
+                               8. Use 'LIST_ITEM: ' before each list item and end with ' :LIST_ITEM_END'
+                               9. Use 'CODE_BLOCK:' before code snippets and end with ':CODE_BLOCK_END'
+                               10. Use 'QUOTE: ' for block quotes and end with ' :QUOTE_END'
+
+                               Example:
+                               FONT: Times New Roman :FONT_END
+                               SPACING: 2 :SPACING_END
+                               SIZE: 12 :SIZE_END
+                               ## HEADING: Introduction :HEADING_END
+                               PARAGRAPH: This is a normal paragraph text. :PARAGRAPH_END
+                               BOLD: This is important information. :BOLD_END
+                               LIST_ITEM: First point :LIST_ITEM_END
+                               LIST_ITEM: Second point :LIST_ITEM_END
+                               LIST_ITEM: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
+                               """ + systemPrompt
+                    }
                 }
             },
             contents = new[]
@@ -45,11 +71,11 @@ public class GeminiService(string apiKey) : IGeminiService
         return await GenerateContentAsync(prompt);
     }
 
-    public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation)
+    public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation, string systemPrompt = "")
     {
         var prompt =
-            $"Complete this assignment based on the following information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
-        return await GenerateContentAsync(prompt);
+            $"Complete this assignment from the students point of view based on the following information. Don't add anything else to your response outside of the assignment that you are being asked to complete: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+        return await GenerateContentAsync(prompt, systemPrompt);
     }
 
     public async Task<string> SummarizeSubmissionAsync(string submissionContent, string assignmentDescription)

@@ -161,7 +161,7 @@ public class ClassroomApplication(
         {
             var content = await _googleDocsContentService.ExtractDocumentContent(document);
             // Console.WriteLine(content);
-            assignmentInformation.Add("This is the document content", content);
+            assignmentInformation.Add($"This is the document content for the document {document.Title}", content);
 
             // This sends the content to the Gemini API for analysis
             // var analysis = await _geminiService.AnalyzeDocumentContentAsync(content);
@@ -175,10 +175,14 @@ public class ClassroomApplication(
         foreach (var text in attachmentText)
         {
             // Console.WriteLine(text);
-            assignmentInformation.Add("This is the text from the attachments on the assignment", text);
+            assignmentInformation.Add(text.Split(':', 2)[0], text);
         }
 
-        Console.WriteLine(await _geminiService.CompleteAssignment(assignmentInformation));
+        var aiResponse = await _geminiService.CompleteAssignment(assignmentInformation);
+
+        Console.WriteLine(aiResponse);
+
+        await _googleDocsService.UpdateDocumentFromAiResponse(aiResponse, documents[0].DocumentId);
     }
 
     private static bool HasValidDueDate(CourseWork work)
