@@ -36,16 +36,26 @@ public class GeminiService(string apiKey) : IGeminiService
                                9. Use 'CODE_BLOCK:' before code snippets and end with ':CODE_BLOCK_END'
                                10. Use 'QUOTE: ' for block quotes and end with ' :QUOTE_END'
 
-                               Example:
+                               Examples:
+                               ## HEADING: Introduction :HEADING_END
+                               
+                               PARAGRAPH: This is a normal paragraph text. :PARAGRAPH_END
+                               
+                               BOLD: This is important information. :BOLD_END
+                               
+                               LIST_ITEM: First point :LIST_ITEM_END
+                               
+                               LIST_ITEM: Second point :LIST_ITEM_END
+                               
+                               LIST_ITEM: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
+                               
                                FONT: Times New Roman :FONT_END
                                SPACING: 2 :SPACING_END
                                SIZE: 12 :SIZE_END
-                               ## HEADING: Introduction :HEADING_END
-                               PARAGRAPH: This is a normal paragraph text. :PARAGRAPH_END
-                               BOLD: This is important information. :BOLD_END
-                               LIST_ITEM: First point :LIST_ITEM_END
-                               LIST_ITEM: Second point :LIST_ITEM_END
-                               LIST_ITEM: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
+                               
+                               
+                               1. Always remember to put the FONT, SPACING, AND SIZE at the end of the response.
+                               2. Always follow the format above.
                                """ + systemPrompt
                     }
                 }

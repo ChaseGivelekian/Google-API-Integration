@@ -49,24 +49,49 @@ public static class GoogleDocsFormatter
             if (line.StartsWith("## HEADING: ") && line.Contains(" :HEADING_END"))
             {
                 var headingText = line.Replace("## HEADING: ", "").Replace(" :HEADING_END", "");
+                // Insert a paragraph break before the heading if not at the beginning
+                if (currentIndex > 1)
+                {
+                    requests.Add(CreateParagraphRequest(currentIndex, "\n"));
+                    currentIndex += 1;
+                }
+
+                startIndex = currentIndex;
                 requests.Add(CreateParagraphRequest(currentIndex, headingText));
                 var textLength = headingText.Length;
                 currentIndex += textLength;
+                // Apply the heading style to the whole paragraph
                 requests.Add(CreateHeadingRequest(startIndex, textLength, "HEADING_2"));
+                // Ensure there's a paragraph break after
+                requests.Add(CreateParagraphRequest(currentIndex, "\n"));
+                currentIndex += 1;
             }
             else if (line.StartsWith("### SUBHEADING: ") && line.Contains(" :SUBHEADING_END"))
             {
                 var subheadingText = line.Replace("### SUBHEADING: ", "").Replace(" :SUBHEADING_END", "");
+                // Insert a paragraph break before the subheading if not at the beginning
+                if (currentIndex > 1)
+                {
+                    requests.Add(CreateParagraphRequest(currentIndex, "\n"));
+                    currentIndex += 1;
+                }
+
+                startIndex = currentIndex;
                 requests.Add(CreateParagraphRequest(currentIndex, subheadingText));
                 var textLength = subheadingText.Length;
                 currentIndex += textLength;
+                // Apply the subheading style to the whole paragraph
                 requests.Add(CreateHeadingRequest(startIndex, textLength, "HEADING_3"));
+                // Ensure there's a paragraph break after
+                requests.Add(CreateParagraphRequest(currentIndex, "\n"));
+                currentIndex += 1;
             }
             else if (line.StartsWith("PARAGRAPH: ") && line.Contains(" :PARAGRAPH_END"))
             {
                 var paragraphText = line.Replace("PARAGRAPH: ", "").Replace(" :PARAGRAPH_END", "");
-                requests.Add(CreateParagraphRequest(currentIndex, paragraphText));
-                currentIndex += paragraphText.Length;
+                var wrappedText = WordWrap(paragraphText, 100); // Adjust maxLineLength as needed
+                requests.Add(CreateParagraphRequest(currentIndex, wrappedText));
+                currentIndex += wrappedText.Length;
             }
             else if (line.StartsWith("BOLD: ") && line.Contains(" :BOLD_END"))
             {
@@ -103,14 +128,15 @@ public static class GoogleDocsFormatter
             else
             {
                 // Plain text
+                if (string.IsNullOrWhiteSpace(line)) continue;
                 requests.Add(CreateParagraphRequest(currentIndex, line));
                 currentIndex += line.Length;
             }
 
             // Add a newline after each line except for the last one
-            if (line == lines.Last()) continue;
-            requests.Add(CreateParagraphRequest(currentIndex, "\n"));
-            currentIndex += 1;
+            // if (line == lines.Last()) continue;
+            // requests.Add(CreateParagraphRequest(currentIndex, "\n"));
+            // currentIndex += 1;
         }
 
         // Apply the document-wide formatting requests
@@ -177,11 +203,6 @@ public static class GoogleDocsFormatter
 
     private static Request CreateParagraphRequest(int startIndex, string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            text = "\n";
-        }
-
         return new Request
         {
             InsertText = new InsertTextRequest
@@ -244,5 +265,35 @@ public static class GoogleDocsFormatter
                 Fields = "indentStart"
             }
         };
+    }
+
+    public static string WordWrap(string text, int maxLineLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var sb = new System.Text.StringBuilder();
+        var currentLineLength = 0;
+
+        foreach (var word in text.Split(' '))
+        {
+            if (currentLineLength + word.Length > maxLineLength)
+            {
+                sb.Append("\n").Append(word);
+                currentLineLength = word.Length;
+            }
+            else
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                    currentLineLength++;
+                }
+                sb.Append(word);
+                currentLineLength += word.Length;
+            }
+        }
+
+        return sb.ToString();
     }
 }
