@@ -39,6 +39,8 @@ public class GeminiService(string apiKey) : IGeminiService
                                Examples:
                                ## HEADING: Introduction :HEADING_END
                                
+                               ### SUBHEADING: Background :SUBHEADING_END
+                               
                                PARAGRAPH: This is a normal paragraph text. :PARAGRAPH_END
                                
                                BOLD: This is important information. :BOLD_END
@@ -55,7 +57,9 @@ public class GeminiService(string apiKey) : IGeminiService
                                
                                
                                1. Always remember to put the FONT, SPACING, AND SIZE at the end of the response.
-                               2. Always follow the format above.
+                               2. Whenever you want to make certain text bold remember to put BOLD: before the text and :BOLD_END at the end.
+                               3. Always follow the format above.
+                               4. If it isn't specified use the default values of FONT: Times New Roman, SPACING: 1.5, SIZE: 12.
                                """ + systemPrompt
                     }
                 }
