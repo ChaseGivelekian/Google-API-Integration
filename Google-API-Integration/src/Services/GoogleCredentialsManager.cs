@@ -14,8 +14,8 @@ public static class GoogleCredentialsManager
     private static readonly string[] Scopes =
     [
         DriveService.Scope.Drive,
-        ClassroomService.Scope.ClassroomCoursesReadonly,
-        ClassroomService.Scope.ClassroomCourseworkMeReadonly,
+        ClassroomService.Scope.ClassroomCourses,
+        ClassroomService.Scope.ClassroomCourseworkMe,
         YouTubeService.Scope.YoutubeReadonly
     ];
 

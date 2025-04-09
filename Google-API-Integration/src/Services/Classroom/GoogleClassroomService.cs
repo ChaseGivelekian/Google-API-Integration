@@ -9,11 +9,6 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
     private readonly ClassroomService _classroomService =
         classroomService ?? throw new ArgumentNullException(nameof(classroomService));
 
-    /// <summary>
-    /// Gets a list of courses.
-    /// </summary>
-    /// <param name="pageSize">How many objects will be returned for each page</param>
-    /// <returns>Returns a list of courses</returns>
     public async Task<IList<Course>> ListCoursesAsync(int pageSize)
     {
         var request = _classroomService.Courses.List();
@@ -23,11 +18,6 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return result.Courses;
     }
 
-    /// <summary>
-    /// Gets a specific course by its ID.
-    /// </summary>
-    /// <param name="courseId">Identifier for the course</param>
-    /// <returns>Returns a course object</returns>
     public async Task<Course> GetCourseAsync(string courseId)
     {
         if (string.IsNullOrEmpty(courseId))
@@ -39,15 +29,6 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return await request.ExecuteAsync();
     }
 
-    /// <summary>
-    /// Gets the coursework for a specific course.
-    /// </summary>
-    /// <param name="courseId">
-    /// The ID of the course for which to get coursework.
-    /// </param>
-    /// <returns>
-    /// Returns a list of coursework for the specified course.
-    /// </returns>
     public async Task<IList<CourseWork>> GetCourseWorkAsync(string courseId)
     {
         if (string.IsNullOrEmpty(courseId))
@@ -60,12 +41,7 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return result.CourseWork ?? new List<CourseWork>();
     }
 
-    /// <summary>
-    /// Gets the submissions for a specific course and coursework and returns them as a list.
-    /// </summary>
-    /// <param name="courseId">Identifier for the course/class</param>
-    /// <param name="courseWorkId">Identifier for the coursework</param>
-    /// <returns>Returns a list of student submissions.</returns>
+
     public async Task<IList<StudentSubmission>> GetStudentSubmissionsForSpecificCourseWorkAsync(string courseId,
         string courseWorkId)
     {
@@ -79,12 +55,6 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return result.StudentSubmissions ?? new List<StudentSubmission>();
     }
 
-    /// <summary>
-    /// Gets student submissions for multiple course works in a single course.
-    /// </summary>
-    /// <param name="courseId">Identifier for the course/class</param>
-    /// <param name="courseWorkIds">List of course work identifiers</param>
-    /// <returns>Dictionary mapping course work IDs to their respective student submissions</returns>
     public async Task<Dictionary<string, IList<StudentSubmission>>> GetStudentSubmissionsForMultipleCourseWorksAsync(
         string courseId, IList<string> courseWorkIds)
     {
@@ -119,15 +89,25 @@ public class GoogleClassroomService(ClassroomService classroomService) : IGoogle
         return result;
     }
 
-    /// <summary>
-    /// Gets the description of a course work.
-    /// </summary>
-    /// <param name="work">The Work object</param>
-    /// <returns>Returns a string with the course work description</returns>
     public Task<string> GetCourseWorkDescriptionAsync(CourseWork work)
     {
         ArgumentNullException.ThrowIfNull(work);
 
         return Task.FromResult(work.Description);
+    }
+
+    public Task<bool> SubmitAssignmentAsync(string courseId, string courseWorkId, string assignmentId)
+    {
+        try
+        {
+            _classroomService.Courses.CourseWork.StudentSubmissions.TurnIn(new TurnInStudentSubmissionRequest(),
+                courseId, courseWorkId, assignmentId);
+            return Task.FromResult(true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return Task.FromResult(false);
+        }
     }
 }

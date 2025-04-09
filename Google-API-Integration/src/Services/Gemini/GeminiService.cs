@@ -33,8 +33,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                6. Use 'PARAGRAPH: ' to start paragraphs and end with ' :PARAGRAPH_END'
                                7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
                                8. Use 'LIST_ITEM: ' before each list item and end with ' :LIST_ITEM_END'
-                               9. Use 'CODE_BLOCK:' before code snippets and end with ':CODE_BLOCK_END'
-                               10. Use 'QUOTE: ' for block quotes and end with ' :QUOTE_END'
+                               9. Use 'INDENT_FIRST_LINE: ' to indicate indentation
 
                                Examples:
                                ## HEADING: Introduction :HEADING_END
@@ -42,6 +41,8 @@ public class GeminiService(string apiKey) : IGeminiService
                                ### SUBHEADING: Background :SUBHEADING_END
                                
                                PARAGRAPH: This is a normal paragraph text. :PARAGRAPH_END
+                               
+                               PARAGRAPH: INDENT_FIRST_LINE: This is an indented paragraph. :PARAGRAPH_END
                                
                                BOLD: This is important information. :BOLD_END
                                
@@ -60,6 +61,9 @@ public class GeminiService(string apiKey) : IGeminiService
                                2. Whenever you want to make certain text bold remember to put BOLD: before the text and :BOLD_END at the end.
                                3. Always follow the format above.
                                4. If it isn't specified use the default values of FONT: Times New Roman, SPACING: 1.5, SIZE: 12.
+                               5. Write in first person. Don't specify who you are. Don't do this: "I, name, etc."
+                               6. Always use the correct grammar and spelling.
+                               7. Always indent paragraph elements unless otherwise told not to.
                                """ + systemPrompt
                     }
                 }
@@ -88,7 +92,7 @@ public class GeminiService(string apiKey) : IGeminiService
     public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation, string systemPrompt = "")
     {
         var prompt =
-            $"Complete this assignment from the students point of view based on the following information. Don't add anything else to your response outside of the assignment that you are being asked to complete: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
         return await GenerateContentAsync(prompt, systemPrompt);
     }
 

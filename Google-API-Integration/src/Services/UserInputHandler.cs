@@ -1,6 +1,6 @@
 ﻿namespace Google_API_Integration.Services;
 
-public class UserInputHandler
+public static class UserInputHandler
 {
     /// <summary>
     /// Prompts the user for input and returns the input.
