@@ -34,9 +34,14 @@ public class GeminiService(string apiKey) : IGeminiService
                                7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
                                8. Use 'LIST_ITEM: ' before each list item and end with ' :LIST_ITEM_END'
                                9. Use 'INDENT_FIRST_LINE: ' to indicate indentation
+                               10. Use 'ALIGNMENT_START: ' to left align text and end with ' :ALIGNMENT_END'
+                               11. Use 'ALIGNMENT_CENTER: ' to center align text and end with ' :ALIGNMENT_END'
+                               12. Use 'ALIGNMENT_END: ' to right align text and end with ' :ALIGNMENT_END'
 
                                Examples:
                                ## HEADING: Introduction :HEADING_END
+                               
+                               ## HEADING: ALIGNMENT_CENTER: This is a centered heading :ALIGNMENT_END :HEADING_END
                                
                                ### SUBHEADING: Background :SUBHEADING_END
                                
@@ -64,6 +69,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                5. Write in first person. Don't specify who you are. Don't do this: "I, name, etc."
                                6. Always use the correct grammar and spelling.
                                7. Always indent paragraph elements unless otherwise told not to.
+                               8. Center the title of the document unless otherwise told not to. Put the alignment information inside of the parent element ie. paragraphs, headers, subheadings, and list items.
                                """ + systemPrompt
                     }
                 }

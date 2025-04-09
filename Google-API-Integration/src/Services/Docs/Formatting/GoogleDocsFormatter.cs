@@ -19,31 +19,38 @@ public static class GoogleDocsFormatter
             {
                 if (line.StartsWith("## HEADING: ") && line.Contains(" :HEADING_END"))
                 {
-                    var headingText = line.Replace("## HEADING: ", "").Replace(" :HEADING_END", "");
-                    requests.Add(CreateHeadingRequest(1, headingText.Length, "HEADING_2"));
-                    requests.Add(CreateParagraphRequest(1, headingText));
-                    documentLength += headingText.Length;
+                    var textWithoutFormatting = line.Replace("## HEADING: ", "").Replace(" :HEADING_END", "");
+                    var (processedText, alignment) = ExtractAlignmentInfo(textWithoutFormatting);
+
+                    requests.Add(CreateHeadingRequest(1, processedText.Length, "HEADING_2", alignment: alignment));
+                    requests.Add(CreateParagraphRequest(1, processedText));
+                    documentLength += processedText.Length;
                 }
                 else if (line.StartsWith("### SUBHEADING: ") && line.Contains(" :SUBHEADING_END"))
                 {
                     var subheadingText = line.Replace("### SUBHEADING: ", "").Replace(" :SUBHEADING_END", "");
-                    requests.Add(CreateHeadingRequest(1, subheadingText.Length, "HEADING_3"));
-                    requests.Add(CreateParagraphRequest(1, subheadingText));
-                    documentLength += subheadingText.Length;
+                    var (processedText, alignment) = ExtractAlignmentInfo(subheadingText);
+
+                    requests.Add(CreateHeadingRequest(1, processedText.Length, "HEADING_3", alignment: alignment));
+                    requests.Add(CreateParagraphRequest(1, processedText));
+                    documentLength += processedText.Length;
                 }
                 else if (line.StartsWith("PARAGRAPH: ") && line.Contains(" :PARAGRAPH_END"))
                 {
                     var paragraphText = line.Replace("PARAGRAPH: ", "").Replace(" :PARAGRAPH_END", "");
+                    var (processedText, alignment) = ExtractAlignmentInfo(paragraphText);
                     var indentFirstLine = false;
-                    if (paragraphText.StartsWith("INDENT_FIRST_LINE: "))
+
+                    if (processedText.StartsWith("INDENT_FIRST_LINE: "))
                     {
-                        paragraphText = paragraphText.Replace("INDENT_FIRST_LINE: ", "");
+                        processedText = processedText.Replace("INDENT_FIRST_LINE: ", "");
                         indentFirstLine = true;
                     }
 
-                    requests.Add(CreateHeadingRequest(1, paragraphText.Length, "NORMAL_TEXT", indentFirstLine));
-                    requests.Add(CreateParagraphRequest(1, paragraphText));
-                    documentLength += paragraphText.Length;
+                    requests.Add(CreateHeadingRequest(1, processedText.Length, "NORMAL_TEXT", indentFirstLine,
+                        alignment: alignment));
+                    requests.Add(CreateParagraphRequest(1, processedText));
+                    documentLength += processedText.Length;
                 }
                 else if (line.Contains("BOLD: ") && line.Contains(" :BOLD_END"))
                 {
@@ -147,7 +154,7 @@ public static class GoogleDocsFormatter
     }
 
     private static Request CreateHeadingRequest(int startIndex, int length, string headingLevel,
-        bool indentFirstLine = false)
+        bool indentFirstLine = false, string alignment = "START")
     {
         return new Request
         {
@@ -158,10 +165,11 @@ public static class GoogleDocsFormatter
                     NamedStyleType = headingLevel,
                     IndentFirstLine = indentFirstLine
                         ? new Dimension { Magnitude = 36, Unit = "PT" }
-                        : new Dimension { Magnitude = 0, Unit = "PT" }
+                        : new Dimension { Magnitude = 0, Unit = "PT" },
+                    Alignment = alignment
                 },
                 Range = new Range { StartIndex = startIndex, EndIndex = startIndex + length },
-                Fields = "namedStyleType,indentFirstLine"
+                Fields = "namedStyleType,indentFirstLine,alignment"
             }
         };
     }
@@ -201,5 +209,28 @@ public static class GoogleDocsFormatter
                 BulletPreset = "BULLET_DISC_CIRCLE_SQUARE"
             }
         };
+    }
+
+    private static (string text, string alignment) ExtractAlignmentInfo(string text)
+    {
+        var alignment = "START";
+
+        if (text.StartsWith("ALIGNMENT_START: ") && text.Contains(" :ALIGNMENT_END"))
+        {
+            text = text.Replace("ALIGNMENT_START: ", "").Replace(" :ALIGNMENT_END", "");
+            alignment = "START";
+        }
+        else if (text.StartsWith("ALIGNMENT_CENTER: ") && text.Contains(" :ALIGNMENT_END"))
+        {
+            text = text.Replace("ALIGNMENT_CENTER: ", "").Replace(" :ALIGNMENT_END", "");
+            alignment = "CENTER";
+        }
+        else if (text.StartsWith("ALIGNMENT_END: ") && text.Contains(" :ALIGNMENT_END"))
+        {
+            text = text.Replace("ALIGNMENT_END: ", "").Replace(" :ALIGNMENT_END", "");
+            alignment = "END";
+        }
+
+        return (text, alignment);
     }
 }
