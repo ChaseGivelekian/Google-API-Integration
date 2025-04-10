@@ -59,10 +59,10 @@ public static class GoogleDocsFormatter
                     requests.Add(CreateParagraphRequest(1, boldText));
                     documentLength += boldText.Length;
                 }
-                else if (line.StartsWith("LIST_ITEM: ") && line.Contains(" :LIST_ITEM_END"))
+                else if (line.StartsWith("LIST_ITEM_BULLET: ") && line.Contains(" :LIST_ITEM_END"))
                 {
-                    var listItemText = line.Replace("LIST_ITEM: ", "").Replace(" :LIST_ITEM_END", "");
-                    requests.Add(CreateListItemRequest(1, listItemText.Length));
+                    var listItemText = line.Replace("LIST_ITEM_BULLET: ", "").Replace(" :LIST_ITEM_END", "");
+                    requests.Add(CreateListItemBulletPointRequest(1, listItemText.Length));
                     requests.Add(CreateParagraphRequest(1, listItemText));
                     documentLength += listItemText.Length;
                 }
@@ -199,7 +199,7 @@ public static class GoogleDocsFormatter
         };
     }
 
-    private static Request CreateListItemRequest(int startIndex, int length)
+    private static Request CreateListItemBulletPointRequest(int startIndex, int length)
     {
         return new Request
         {

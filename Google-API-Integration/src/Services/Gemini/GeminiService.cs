@@ -32,7 +32,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                5. Use '### SUBHEADING: ' for subsection headings and end with ' :SUBHEADING_END'
                                6. Use 'PARAGRAPH: ' to start paragraphs and end with ' :PARAGRAPH_END'
                                7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
-                               8. Use 'LIST_ITEM: ' before each list item and end with ' :LIST_ITEM_END'
+                               8. Use 'LIST_ITEM_BULLET: ' before each bullet point list item and end with ' :LIST_ITEM_END'
                                9. Use 'INDENT_FIRST_LINE: ' to indicate indentation
                                10. Use 'ALIGNMENT_START: ' to left align text and end with ' :ALIGNMENT_END'
                                11. Use 'ALIGNMENT_CENTER: ' to center align text and end with ' :ALIGNMENT_END'
@@ -51,11 +51,11 @@ public class GeminiService(string apiKey) : IGeminiService
                                
                                BOLD: This is important information. :BOLD_END
                                
-                               LIST_ITEM: First point :LIST_ITEM_END
+                               LIST_ITEM_BULLET: First point :LIST_ITEM_END
                                
-                               LIST_ITEM: Second point :LIST_ITEM_END
+                               LIST_ITEM_BULLET: Second point :LIST_ITEM_END
                                
-                               LIST_ITEM: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
+                               LIST_ITEM_BULLET: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
                                
                                FONT: Times New Roman :FONT_END
                                SPACING: 2 :SPACING_END
