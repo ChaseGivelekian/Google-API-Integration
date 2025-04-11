@@ -101,7 +101,7 @@ public class GeminiService(string apiKey) : IGeminiService
     public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation, string systemPrompt = "")
     {
         var prompt =
-            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Remember to use lots of bold text, please! Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Remember to use lots of inline bold text, please! Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
         return await GenerateContentAsync(prompt, systemPrompt);
     }
 

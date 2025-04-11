@@ -50,7 +50,20 @@ public static class GoogleDocsFormatter
 
                     requests.Add(CreateHeadingRequest(1, processedText.Length, "NORMAL_TEXT", indentFirstLine,
                         alignment: alignment));
-                    requests.Add(CreateParagraphRequest(1, processedText));
+
+                    var finalText = ExtractInlineBoldText(processedText);
+
+                    foreach (var (text, isBold) in finalText)
+                    {
+                        if (isBold)
+                        {
+                            requests.Add(CreateBoldTextRequest(1, text.Length));
+                        }
+
+                        requests.Add(CreateParagraphRequest(1, text));
+                    }
+
+                    // requests.Add(CreateParagraphRequest(1, processedText));
                     documentLength += processedText.Length;
                 }
                 else if (line.Contains("BOLD: ") && line.Contains(" :BOLD_END"))
@@ -195,7 +208,7 @@ public static class GoogleDocsFormatter
             UpdateTextStyle = new UpdateTextStyleRequest
             {
                 TextStyle = new TextStyle { Bold = true },
-                Range = new Range { StartIndex = startIndex, EndIndex = startIndex + length },
+                Range = new Range { StartIndex = startIndex, EndIndex = length },
                 Fields = "bold"
             }
         };
@@ -234,5 +247,50 @@ public static class GoogleDocsFormatter
         }
 
         return (text, alignment);
+    }
+
+    private static List<(string text, bool isBold)> ExtractInlineBoldText(string text)
+    {
+        var result = new List<(string text, bool isBold)>();
+        var currentIndex = 0;
+
+        while (currentIndex < text.Length)
+        {
+            var boldStartIndex = text.IndexOf("[**", currentIndex, StringComparison.Ordinal);
+
+            // If no more bold markers found, add remaining text as non-bold and exit
+            if (boldStartIndex == -1)
+            {
+                if (currentIndex < text.Length)
+                {
+                    result.Add((text[currentIndex..], false));
+                }
+                break;
+            }
+
+            // Add text before the bold marker (if any)
+            if (boldStartIndex > currentIndex)
+            {
+                result.Add((text.Substring(currentIndex, boldStartIndex - currentIndex), false));
+            }
+
+            // Find the end of the bold text
+            var boldEndIndex = text.IndexOf("**]", boldStartIndex, StringComparison.Ordinal);
+            if (boldEndIndex == -1)
+            {
+                // No closing bold marker, treat the rest as non-bold
+                result.Add((text[boldStartIndex..], false));
+                break;
+            }
+
+            // Extract the bold text (excluding the markers)
+            var boldText = text.Substring(boldStartIndex + 3, boldEndIndex - boldStartIndex - 3);
+            result.Add((boldText, true));
+
+            // Move the current index to after the closing bold marker
+            // currentIndex = boldEndIndex + 3;
+        }
+
+        return result;
     }
 }
