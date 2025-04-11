@@ -183,14 +183,6 @@ public class ClassroomApplication(
         Console.WriteLine(aiResponse);
 
         await _googleDocsService.UpdateDocumentFromAiResponse(aiResponse, documents[0].DocumentId);
-
-        // UserInputHandler.GetConfirmation("Do you want to submit this assignment?");
-        //
-        // Console.WriteLine(
-        //     await _googleClassroomService.SubmitAssignmentAsync(workId[0].CourseId,
-        //         workId[0].CourseWorkId, workId[0].Id)
-        //         ? "Assignment submitted successfully!"
-        //         : "Failed to submit assignment.");
     }
 
     private static bool HasValidDueDate(CourseWork work)

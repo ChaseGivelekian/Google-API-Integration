@@ -32,6 +32,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                5. Use '### SUBHEADING: ' for subsection headings and end with ' :SUBHEADING_END'
                                6. Use 'PARAGRAPH: ' to start paragraphs and end with ' :PARAGRAPH_END'
                                7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
+                               8. Use [**around text for inline bold text and end with**]
                                8. Use 'LIST_ITEM_BULLET: ' before each bullet point list item and end with ' :LIST_ITEM_END'
                                9. Use 'INDENT_FIRST_LINE: ' to indicate indentation
                                10. Use 'ALIGNMENT_START: ' to left align text and end with ' :ALIGNMENT_END'
@@ -49,13 +50,15 @@ public class GeminiService(string apiKey) : IGeminiService
                                
                                PARAGRAPH: INDENT_FIRST_LINE: This is an indented paragraph. :PARAGRAPH_END
                                
-                               BOLD: This is important information. :BOLD_END
+                               PARAGRAPH: [**This is a bold paragraph.**] :PARAGRAPH_END
+                               
+                               BOLD: This is an important section. :BOLD_END
                                
                                LIST_ITEM_BULLET: First point :LIST_ITEM_END
                                
                                LIST_ITEM_BULLET: Second point :LIST_ITEM_END
                                
-                               LIST_ITEM_BULLET: BOLD: This is a bold list item. :BOLD_END :LIST_ITEM_END
+                               LIST_ITEM_BULLET: [**This is a bold list item.**] :LIST_ITEM_END
                                
                                FONT: Times New Roman :FONT_END
                                SPACING: 2 :SPACING_END
@@ -63,7 +66,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                
                                
                                1. Always remember to put the FONT, SPACING, AND SIZE at the end of the response.
-                               2. Whenever you want to make certain text bold remember to put BOLD: before the text and :BOLD_END at the end.
+                               2. Use BOLD: to indicate a bold section of text and end with :BOLD_END for inline bold text use [**bold text**].
                                3. Always follow the format above.
                                4. If it isn't specified use the default values of FONT: Times New Roman, SPACING: 1.5, SIZE: 12.
                                5. Write in first person. Don't specify who you are. Don't do this: "I, name, etc."
@@ -98,7 +101,7 @@ public class GeminiService(string apiKey) : IGeminiService
     public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation, string systemPrompt = "")
     {
         var prompt =
-            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Remember to use lots of bold text, please! Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
         return await GenerateContentAsync(prompt, systemPrompt);
     }
 

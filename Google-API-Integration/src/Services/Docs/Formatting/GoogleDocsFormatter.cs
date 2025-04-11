@@ -37,6 +37,7 @@ public static class GoogleDocsFormatter
                 }
                 else if (line.StartsWith("PARAGRAPH: ") && line.Contains(" :PARAGRAPH_END"))
                 {
+                    // TODO: Add inline bold text support
                     var paragraphText = line.Replace("PARAGRAPH: ", "").Replace(" :PARAGRAPH_END", "");
                     var (processedText, alignment) = ExtractAlignmentInfo(paragraphText);
                     var indentFirstLine = false;
@@ -61,6 +62,7 @@ public static class GoogleDocsFormatter
                 }
                 else if (line.StartsWith("LIST_ITEM_BULLET: ") && line.Contains(" :LIST_ITEM_END"))
                 {
+                    // TODO: Fix the bullet point formatting
                     var listItemText = line.Replace("LIST_ITEM_BULLET: ", "").Replace(" :LIST_ITEM_END", "");
                     requests.Add(CreateListItemBulletPointRequest(1, listItemText.Length));
                     requests.Add(CreateParagraphRequest(1, listItemText));
@@ -205,7 +207,7 @@ public static class GoogleDocsFormatter
         {
             CreateParagraphBullets = new CreateParagraphBulletsRequest
             {
-                Range = new Range { StartIndex = startIndex, EndIndex = startIndex + length },
+                Range = new Range { StartIndex = startIndex, EndIndex = length },
                 BulletPreset = "BULLET_DISC_CIRCLE_SQUARE"
             }
         };
