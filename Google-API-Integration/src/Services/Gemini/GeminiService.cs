@@ -32,7 +32,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                5. Use '### SUBHEADING: ' for subsection headings and end with ' :SUBHEADING_END'
                                6. Use 'PARAGRAPH: ' to start paragraphs and end with ' :PARAGRAPH_END'
                                7. Use 'BOLD: ' before bold text and end with ' :BOLD_END'
-                               8. Use [**around text for inline bold text and end with**]
+                               8. Use [**around text for inline bold text and end with**] Always keep the brackets and apostrophes (*) in this format [**example text**].
                                8. Use 'LIST_ITEM_BULLET: ' before each bullet point list item and end with ' :LIST_ITEM_END'
                                9. Use 'INDENT_FIRST_LINE: ' to indicate indentation
                                10. Use 'ALIGNMENT_START: ' to left align text and end with ' :ALIGNMENT_END'
@@ -72,7 +72,7 @@ public class GeminiService(string apiKey) : IGeminiService
                                5. Write in first person. Don't specify who you are. Don't do this: "I, name, etc."
                                6. Always use the correct grammar and spelling.
                                7. Always indent paragraph elements unless otherwise told not to.
-                               8. Center the title of the document unless otherwise told not to. Put the alignment information inside of the parent element ie. paragraphs, headers, subheadings, and list items.
+                               8. Center the title of the document unless otherwise told not to. Put the alignment information inside of the parent element ie. paragraphs, headers, subheadings, and list items. For example HEADING: ALIGNMENT_CENTER: This is a centered heading :ALIGNMENT_END :HEADING_END
                                """ + systemPrompt
                     }
                 }

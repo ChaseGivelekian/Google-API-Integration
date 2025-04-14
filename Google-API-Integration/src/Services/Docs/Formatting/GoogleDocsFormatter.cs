@@ -48,29 +48,34 @@ public static class GoogleDocsFormatter
                         indentFirstLine = true;
                     }
 
-                    requests.Add(CreateHeadingRequest(1, processedText.Length, "NORMAL_TEXT", indentFirstLine,
-                        alignment: alignment));
 
                     var finalText = ExtractInlineBoldText(processedText);
+                    var finalTextLength = finalText.Sum(item => item.text.Length);
+
+                    requests.Add(CreateHeadingRequest(1, finalTextLength, "NORMAL_TEXT",
+                        indentFirstLine, alignment: alignment));
 
                     foreach (var (text, isBold) in finalText)
                     {
                         if (isBold)
                         {
-                            requests.Add(CreateBoldTextRequest(1, text.Length));
+                            requests.AddRange(CreateBoldTextRequest(1, text));
+                        }
+                        else
+                        {
+                            requests.Add(CreateParagraphRequest(1, text));
                         }
 
-                        requests.Add(CreateParagraphRequest(1, text));
+                        // requests.Add(CreateParagraphRequest(1, text));
                     }
 
-                    // requests.Add(CreateParagraphRequest(1, processedText));
-                    documentLength += processedText.Length;
+                    documentLength += finalTextLength;
                 }
                 else if (line.Contains("BOLD: ") && line.Contains(" :BOLD_END"))
                 {
                     var boldText = line.Replace("BOLD: ", "").Replace(" :BOLD_END", "");
-                    requests.Add(CreateBoldTextRequest(1, boldText.Length));
-                    requests.Add(CreateParagraphRequest(1, boldText));
+                    requests.AddRange(CreateBoldTextRequest(1, boldText));
+                    // requests.Add(CreateParagraphRequest(1, boldText));
                     documentLength += boldText.Length;
                 }
                 else if (line.StartsWith("LIST_ITEM_BULLET: ") && line.Contains(" :LIST_ITEM_END"))
@@ -201,17 +206,32 @@ public static class GoogleDocsFormatter
         };
     }
 
-    private static Request CreateBoldTextRequest(int startIndex, int length)
+    private static List<Request> CreateBoldTextRequest(int startIndex, string text)
     {
-        return new Request
+        var requests = new List<Request>
         {
-            UpdateTextStyle = new UpdateTextStyleRequest
+            new()
             {
-                TextStyle = new TextStyle { Bold = true },
-                Range = new Range { StartIndex = startIndex, EndIndex = length },
-                Fields = "bold"
+                InsertText = new InsertTextRequest
+                {
+                    Text = text,
+                    Location = new Location { Index = startIndex }
+                }
+            },
+            new()
+            {
+                UpdateTextStyle = new UpdateTextStyleRequest
+                {
+                    TextStyle = new TextStyle { Bold = true },
+                    Range = new Range { StartIndex = startIndex, EndIndex = startIndex + text.Length },
+                    Fields = "bold"
+                }
             }
         };
+
+        requests.Reverse();
+
+        return requests;
     }
 
     private static Request CreateListItemBulletPointRequest(int startIndex, int length)
@@ -265,6 +285,7 @@ public static class GoogleDocsFormatter
                 {
                     result.Add((text[currentIndex..], false));
                 }
+
                 break;
             }
 
@@ -284,11 +305,12 @@ public static class GoogleDocsFormatter
             }
 
             // Extract the bold text (excluding the markers)
-            var boldText = text.Substring(boldStartIndex + 3, boldEndIndex - boldStartIndex - 3);
+            var boldText = text.Substring(boldStartIndex, boldEndIndex - boldStartIndex + 3);
+            boldText = boldText.Replace("[**", "").Replace("**]", "");
             result.Add((boldText, true));
 
             // Move the current index to after the closing bold marker
-            // currentIndex = boldEndIndex + 3;
+            currentIndex = boldEndIndex + 3;
         }
 
         return result;
