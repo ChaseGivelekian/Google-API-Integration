@@ -48,28 +48,34 @@ public static class GoogleDocsFormatter
                         indentFirstLine = true;
                     }
 
+                    var textParts = ExtractInlineBoldText(processedText);
+                    var currentPosition = 1;
 
-                    var finalText = ExtractInlineBoldText(processedText);
-                    var finalTextLength = finalText.Sum(item => item.text.Length);
+                    processedText = processedText.Replace("[**", "").Replace("**]", "");
 
-                    requests.Add(CreateHeadingRequest(1, finalTextLength, "NORMAL_TEXT",
-                        indentFirstLine, alignment: alignment));
-
-                    foreach (var (text, isBold) in finalText)
+                    foreach (var (text, isBold) in textParts)
                     {
                         if (isBold)
                         {
-                            requests.AddRange(CreateBoldTextRequest(1, text));
-                        }
-                        else
-                        {
-                            requests.Add(CreateParagraphRequest(1, text));
+                            requests.Add(new Request
+                            {
+                                UpdateTextStyle = new UpdateTextStyleRequest
+                                {
+                                    TextStyle = new TextStyle { Bold = true },
+                                    Range = new Range
+                                        { StartIndex = currentPosition, EndIndex = currentPosition + text.Length },
+                                    Fields = "bold"
+                                }
+                            });
                         }
 
-                        // requests.Add(CreateParagraphRequest(1, text));
+                        currentPosition += text.Length;
                     }
 
-                    documentLength += finalTextLength;
+                    requests.Add(CreateParagraphStylingRequest(1, processedText.Length, indentFirstLine, alignment));
+                    requests.Add(CreateParagraphRequest(1, processedText));
+
+                    documentLength += processedText.Length;
                 }
                 else if (line.Contains("BOLD: ") && line.Contains(" :BOLD_END"))
                 {
@@ -87,11 +93,11 @@ public static class GoogleDocsFormatter
                     documentLength += listItemText.Length;
                 }
                 // Whole document formatting
-                else if (line.StartsWith("FONT: ") && line.Contains(" :FONT_END"))
-                {
-                    var fontName = line.Replace("FONT: ", "").Replace(" :FONT_END", "");
-                    formattingRequests.Add(CreateFontRequest(1, documentLength, fontName));
-                }
+                // else if (line.StartsWith("FONT: ") && line.Contains(" :FONT_END"))
+                // {
+                //     var fontName = line.Replace("FONT: ", "").Replace(" :FONT_END", "");
+                //     formattingRequests.Add(CreateFontRequest(1, documentLength, fontName));
+                // }
                 else if (line.StartsWith("SPACING: ") && line.Contains(" :SPACING_END"))
                 {
                     var spacingValue = line.Replace("SPACING: ", "").Replace(" :SPACING_END", "");
@@ -194,6 +200,26 @@ public static class GoogleDocsFormatter
         };
     }
 
+    private static Request CreateParagraphStylingRequest(int startIndex, int length,
+        bool indentFirstLine = false, string alignment = "START")
+    {
+        return new Request
+        {
+            UpdateParagraphStyle = new UpdateParagraphStyleRequest
+            {
+                ParagraphStyle = new ParagraphStyle
+                {
+                    IndentFirstLine = indentFirstLine
+                        ? new Dimension { Magnitude = 36, Unit = "PT" }
+                        : new Dimension { Magnitude = 0, Unit = "PT" },
+                    Alignment = alignment
+                },
+                Range = new Range { StartIndex = startIndex, EndIndex = startIndex + length },
+                Fields = "indentFirstLine,alignment"
+            }
+        };
+    }
+
     private static Request CreateParagraphRequest(int startIndex, string text)
     {
         return new Request
@@ -206,7 +232,8 @@ public static class GoogleDocsFormatter
         };
     }
 
-    private static List<Request> CreateBoldTextRequest(int startIndex, string text)
+    private static List<Request> CreateBoldTextRequest(int startIndex, string text, bool indentFirstLine = false,
+        string alignment = "START")
     {
         var requests = new List<Request>
         {
@@ -218,6 +245,7 @@ public static class GoogleDocsFormatter
                     Location = new Location { Index = startIndex }
                 }
             },
+            CreateHeadingRequest(startIndex, text.Length, "NORMAL_TEXT", indentFirstLine, alignment),
             new()
             {
                 UpdateTextStyle = new UpdateTextStyleRequest
@@ -276,7 +304,17 @@ public static class GoogleDocsFormatter
 
         while (currentIndex < text.Length)
         {
-            var boldStartIndex = text.IndexOf("[**", currentIndex, StringComparison.Ordinal);
+            // Check for both [** and **[ patterns
+            var boldStartIndex1 = text.IndexOf("[**", currentIndex, StringComparison.Ordinal);
+            var boldStartIndex2 = text.IndexOf("**[", currentIndex, StringComparison.Ordinal);
+
+            // Find the closest bold marker (or -1 if none found)
+            var boldStartIndex = boldStartIndex1 == -1 ? boldStartIndex2 :
+                boldStartIndex2 == -1 ? boldStartIndex1 :
+                Math.Min(boldStartIndex1, boldStartIndex2);
+
+            // Determine which format was found
+            var isReversedFormat = boldStartIndex == boldStartIndex2;
 
             // If no more bold markers found, add remaining text as non-bold and exit
             if (boldStartIndex == -1)
@@ -295,8 +333,10 @@ public static class GoogleDocsFormatter
                 result.Add((text.Substring(currentIndex, boldStartIndex - currentIndex), false));
             }
 
-            // Find the end of the bold text
-            var boldEndIndex = text.IndexOf("**]", boldStartIndex, StringComparison.Ordinal);
+            // Find the end of the bold text - look for a corresponding closing pattern
+            var closingPattern = isReversedFormat ? "]**" : "**]";
+            var boldEndIndex = text.IndexOf(closingPattern, boldStartIndex, StringComparison.Ordinal);
+
             if (boldEndIndex == -1)
             {
                 // No closing bold marker, treat the rest as non-bold
@@ -305,8 +345,8 @@ public static class GoogleDocsFormatter
             }
 
             // Extract the bold text (excluding the markers)
-            var boldText = text.Substring(boldStartIndex, boldEndIndex - boldStartIndex + 3);
-            boldText = boldText.Replace("[**", "").Replace("**]", "");
+            var boldText = text.Substring(boldStartIndex + 3, boldEndIndex - boldStartIndex - 3);
+
             result.Add((boldText, true));
 
             // Move the current index to after the closing bold marker
