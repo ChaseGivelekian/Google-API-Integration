@@ -13,6 +13,9 @@ public static class GoogleDocsFormatter
 
         var documentLength = 1;
 
+        var fontName = lines.FirstOrDefault(line => line.StartsWith("FONT: ") && line.Contains(" :FONT_END"));
+        fontName = fontName?.Replace("FONT: ", "").Replace(" :FONT_END", "");
+
         foreach (var line in lines)
         {
             if (!string.IsNullOrEmpty(line))
@@ -22,6 +25,7 @@ public static class GoogleDocsFormatter
                     var textWithoutFormatting = line.Replace("## HEADING: ", "").Replace(" :HEADING_END", "");
                     var (processedText, alignment) = ExtractAlignmentInfo(textWithoutFormatting);
 
+                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
                     requests.Add(CreateHeadingRequest(1, processedText.Length, "HEADING_2", alignment: alignment));
                     requests.Add(CreateParagraphRequest(1, processedText));
                     documentLength += processedText.Length;
@@ -31,13 +35,13 @@ public static class GoogleDocsFormatter
                     var subheadingText = line.Replace("### SUBHEADING: ", "").Replace(" :SUBHEADING_END", "");
                     var (processedText, alignment) = ExtractAlignmentInfo(subheadingText);
 
+                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
                     requests.Add(CreateHeadingRequest(1, processedText.Length, "HEADING_3", alignment: alignment));
                     requests.Add(CreateParagraphRequest(1, processedText));
                     documentLength += processedText.Length;
                 }
                 else if (line.StartsWith("PARAGRAPH: ") && line.Contains(" :PARAGRAPH_END"))
                 {
-                    // TODO: Add inline bold text support
                     var paragraphText = line.Replace("PARAGRAPH: ", "").Replace(" :PARAGRAPH_END", "");
                     var (processedText, alignment) = ExtractAlignmentInfo(paragraphText);
                     var indentFirstLine = false;
@@ -73,6 +77,7 @@ public static class GoogleDocsFormatter
                     }
 
                     requests.Add(CreateParagraphStylingRequest(1, processedText.Length, indentFirstLine, alignment));
+                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
                     requests.Add(CreateParagraphRequest(1, processedText));
 
                     documentLength += processedText.Length;
@@ -80,8 +85,8 @@ public static class GoogleDocsFormatter
                 else if (line.Contains("BOLD: ") && line.Contains(" :BOLD_END"))
                 {
                     var boldText = line.Replace("BOLD: ", "").Replace(" :BOLD_END", "");
+                    if (fontName != null) requests.Add(CreateFontRequest(1, boldText.Length, fontName));
                     requests.AddRange(CreateBoldTextRequest(1, boldText));
-                    // requests.Add(CreateParagraphRequest(1, boldText));
                     documentLength += boldText.Length;
                 }
                 else if (line.StartsWith("LIST_ITEM_BULLET: ") && line.Contains(" :LIST_ITEM_END"))
@@ -93,11 +98,6 @@ public static class GoogleDocsFormatter
                     documentLength += listItemText.Length;
                 }
                 // Whole document formatting
-                // else if (line.StartsWith("FONT: ") && line.Contains(" :FONT_END"))
-                // {
-                //     var fontName = line.Replace("FONT: ", "").Replace(" :FONT_END", "");
-                //     formattingRequests.Add(CreateFontRequest(1, documentLength, fontName));
-                // }
                 else if (line.StartsWith("SPACING: ") && line.Contains(" :SPACING_END"))
                 {
                     var spacingValue = line.Replace("SPACING: ", "").Replace(" :SPACING_END", "");
@@ -166,7 +166,7 @@ public static class GoogleDocsFormatter
         };
     }
 
-    private static Request CreateFontRequest(int startIndex, int endIndex, string fontName)
+    private static Request CreateFontRequest(int startIndex, int endIndex, string fontName = "Arial")
     {
         return new Request
         {
@@ -200,8 +200,8 @@ public static class GoogleDocsFormatter
         };
     }
 
-    private static Request CreateParagraphStylingRequest(int startIndex, int length,
-        bool indentFirstLine = false, string alignment = "START")
+    private static Request CreateParagraphStylingRequest(int startIndex, int length, bool indentFirstLine = false,
+        string alignment = "START")
     {
         return new Request
         {
