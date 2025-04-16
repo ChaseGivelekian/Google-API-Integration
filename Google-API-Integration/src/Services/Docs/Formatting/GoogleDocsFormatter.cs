@@ -35,7 +35,7 @@ public static class GoogleDocsFormatter
                     var subheadingText = line.Replace("### SUBHEADING: ", "").Replace(" :SUBHEADING_END", "");
                     var (processedText, alignment) = ExtractAlignmentInfo(subheadingText);
 
-                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
+                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length + 1, fontName));
                     requests.Add(CreateHeadingRequest(1, processedText.Length, "HEADING_3", alignment: alignment));
                     requests.Add(CreateParagraphRequest(1, processedText));
                     documentLength += processedText.Length;
@@ -78,6 +78,7 @@ public static class GoogleDocsFormatter
 
                     requests.Add(CreateParagraphStylingRequest(1, processedText.Length, indentFirstLine, alignment));
                     if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
+                    requests.Add(CreateNamedStyleRequest(1, processedText.Length, "NORMAL_TEXT"));
                     requests.Add(CreateParagraphRequest(1, processedText));
 
                     documentLength += processedText.Length;
@@ -93,9 +94,49 @@ public static class GoogleDocsFormatter
                 {
                     // TODO: Fix the bullet point formatting
                     var listItemText = line.Replace("LIST_ITEM_BULLET: ", "").Replace(" :LIST_ITEM_END", "");
-                    requests.Add(CreateListItemBulletPointRequest(1, listItemText.Length));
-                    requests.Add(CreateParagraphRequest(1, listItemText));
-                    documentLength += listItemText.Length;
+                    var (processedText, alignment) = ExtractAlignmentInfo(listItemText);
+                    var indentFirstLine = false;
+
+                    if (processedText.StartsWith("INDENT_FIRST_LINE: "))
+                    {
+                        processedText = processedText.Replace("INDENT_FIRST_LINE: ", "");
+                        indentFirstLine = true;
+                    }
+
+                    var textParts = ExtractInlineBoldText(processedText);
+                    var currentPosition = 1;
+
+                    processedText = processedText.Replace("[**", "").Replace("**]", "");
+
+                    foreach (var (text, isBold) in textParts)
+                    {
+                        if (isBold)
+                        {
+                            requests.Add(new Request
+                            {
+                                UpdateTextStyle = new UpdateTextStyleRequest
+                                {
+                                    TextStyle = new TextStyle { Bold = true },
+                                    Range = new Range
+                                        { StartIndex = currentPosition, EndIndex = currentPosition + text.Length },
+                                    Fields = "bold"
+                                }
+                            });
+                        }
+
+                        currentPosition += text.Length;
+                    }
+
+                    requests.Add(DeleteListItemBulletPointRequest(1, 2));
+
+                    requests.Add(CreateParagraphRequest(1, "\n"));
+
+                    requests.Add(CreateListItemBulletPointRequest(1, processedText.Length));
+                    requests.Add(CreateParagraphStylingRequest(1, processedText.Length, indentFirstLine, alignment));
+                    if (fontName != null) requests.Add(CreateFontRequest(1, processedText.Length, fontName));
+                    requests.Add(CreateNamedStyleRequest(1, processedText.Length, "NORMAL_TEXT"));
+                    requests.Add(CreateParagraphRequest(1, processedText));
+                    documentLength += processedText.Length;
                 }
                 // Whole document formatting
                 else if (line.StartsWith("SPACING: ") && line.Contains(" :SPACING_END"))
@@ -220,6 +261,22 @@ public static class GoogleDocsFormatter
         };
     }
 
+    private static Request CreateNamedStyleRequest(int startIndex, int length, string styleName)
+    {
+        return new Request
+        {
+            UpdateParagraphStyle = new UpdateParagraphStyleRequest
+            {
+                ParagraphStyle = new ParagraphStyle
+                {
+                    NamedStyleType = styleName
+                },
+                Range = new Range { StartIndex = startIndex, EndIndex = length },
+                Fields = "namedStyleType"
+            }
+        };
+    }
+
     private static Request CreateParagraphRequest(int startIndex, string text)
     {
         return new Request
@@ -270,6 +327,17 @@ public static class GoogleDocsFormatter
             {
                 Range = new Range { StartIndex = startIndex, EndIndex = length },
                 BulletPreset = "BULLET_DISC_CIRCLE_SQUARE"
+            }
+        };
+    }
+
+    private static Request DeleteListItemBulletPointRequest(int startIndex, int length)
+    {
+        return new Request
+        {
+            DeleteParagraphBullets = new DeleteParagraphBulletsRequest
+            {
+                Range = new Range { StartIndex = startIndex, EndIndex = length }
             }
         };
     }
