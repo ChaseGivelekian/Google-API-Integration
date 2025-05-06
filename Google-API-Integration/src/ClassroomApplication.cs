@@ -183,6 +183,12 @@ public class ClassroomApplication(
         Console.WriteLine(aiResponse);
 
         await _googleDocsService.UpdateDocumentFromAiResponse(aiResponse, documents[0].DocumentId);
+
+        // This is so you can see the AI response before it closes when run from the terminal
+        Console.WriteLine("\n\nPress any key to exit...");
+        Console.ReadLine();
+
+        Environment.Exit(0);
     }
 
     private static bool HasValidDueDate(CourseWork work)
