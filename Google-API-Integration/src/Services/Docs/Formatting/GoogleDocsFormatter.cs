@@ -384,7 +384,7 @@ public static class GoogleDocsFormatter
             // Determine which format was found
             var isReversedFormat = boldStartIndex == boldStartIndex2;
 
-            // If no more bold markers found, add remaining text as non-bold and exit
+            // If no more bold markers found, add the remaining text as non-bold and exit
             if (boldStartIndex == -1)
             {
                 if (currentIndex < text.Length)

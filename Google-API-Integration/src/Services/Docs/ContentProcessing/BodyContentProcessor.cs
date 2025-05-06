@@ -2,7 +2,7 @@
 using Google_API_Integration.Interfaces;
 using Google.Apis.Docs.v1.Data;
 
-namespace Google_API_Integration.Services.Docs.DocsContentProcessing;
+namespace Google_API_Integration.Services.Docs.ContentProcessing;
 
 public class BodyContentProcessor : IDocumentContentProcessor
 {

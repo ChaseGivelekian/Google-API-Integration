@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using Google_API_Integration.Interfaces;
-using Google_API_Integration.Services.Docs.DocsContentProcessing;
+using Google_API_Integration.Services.Docs.ContentProcessing;
 using Google.Apis.Docs.v1.Data;
 
 namespace Google_API_Integration.Services.Docs;
