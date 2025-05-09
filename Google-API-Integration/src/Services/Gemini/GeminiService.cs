@@ -74,36 +74,33 @@ public class GeminiService(string apiKey) : IGeminiService
                                7. Always use the correct grammar and spelling.
                                8. Always indent paragraph elements unless otherwise told not to.
                                9. Center the title of the document unless otherwise told not to. Put the alignment information inside of the parent element ie. paragraphs, headers, subheadings, and list items. For example HEADING: ALIGNMENT_CENTER: This is a centered heading :ALIGNMENT_END :HEADING_END
+                               10. Don't include any introductory text or explanations in your response. Just provide the content as requested.
                                
                                
-                               Here is a perfect example of a response with the correct format:
-                               ## HEADING: ALIGNMENT_CENTER: Chase Givelekian - Work :ALIGNMENT_END :HEADING_END
                                
-                               PARAGRAPH: I am submitting this coursework to fulfill the assignment requirements. I have worked diligently to complete the task as described. Below, I will outline the key aspects of my work. :PARAGRAPH_END
+                               Here is a perfect example of a response with the correct format, however use your discretion based on the assignment you are tasked with completing:
+                               PARAGRAPH: April 28, 2025 :PARAGRAPH_END
                                
-                               ### SUBHEADING: Detailed Description of Work :SUBHEADING_END
                                
-                               PARAGRAPH: INDENT_FIRST_LINE: As specified, this coursework does not include any attachments. Therefore, the entirety of my submission is contained within this document. I have focused on providing a comprehensive and verbose explanation of my understanding and approach to the assignment. :PARAGRAPH_END
                                
-                               ### SUBHEADING: Key Components of the Coursework :SUBHEADING_END
+                               PARAGRAPH: Hello incoming senior, :PARAGRAPH_END
                                
-                               PARAGRAPH: INDENT_FIRST_LINE: Here are the key elements that I believe demonstrate my understanding of the course material: :PARAGRAPH_END
+                               PARAGRAPH: To be a senior at Medina County Career Center (MCCC) is to be on the precipice of adulthood, as you are a short nine months away from being able to achieve the future that you desire. The decision to go to MCCC was made because you had an idea of what you wanted to be in the future. However, these next few months will be a scary time. For those going to college, there is a lot of anxiety over getting into the school you want, and those going into the workforce will have a large change in their day-to-day routine. In the next chapter of your life, there is also the fear of being at the bottom of the totem pole in seniority. Right now, you’re a senior in high school; however, wherever you go next, be it college or a full-time job, you’ll be back to the bottom of the list. Nevertheless, you should still enjoy this final year of high school. Some of my favorite moments at MCCC are participating in the competitions that each lab has, like BPA and HOSA. These competitions, while nerve-wracking, were also some of the most fun, especially if it was an overnight trip. :PARAGRAPH_END
                                
-                               LIST_ITEM_BULLET: [**Comprehensive Overview:**] I have strived to provide a thorough and detailed overview of the subject matter. :LIST_ITEM_END
+                               PARAGRAPH: There is undoubtedly a different vibe in classes when all the students are seniors. Teachers seem more carefree and open in these classes, which I attribute to the students' age and increased maturity. However, there will still be teachers that you won’t like. This could be caused by many things, such as the way they teach, their interactions with students, or it could just be the material that they teach. Nevertheless, you still have to take the class, so my recommendation is to do good in the class out of spite. This is what got me through quite a few bad classes that I had to take. The feeling of superiority that you get when you pass their class is exhilarating. However, most teachers will be very cordial and nice if you just do your work and behave in class. In the end, I would say that during senior year, students are given more liberty and respect by the teachers as long as the students do not betray their trust in them. :PARAGRAPH_END
                                
-                               LIST_ITEM_BULLET: [**Detailed Explanations:**] My explanations are designed to be clear, concise, and easily understandable. I have ensured that all concepts are well-defined and supported by relevant information. :LIST_ITEM_END
+                               PARAGRAPH: To be successful in your senior year, you must work on your communication, time management, and critical thinking. These are the most important skills to hone in your senior year, as they will help the most in the years after graduation. The sheer number of things that will be thrown at you during the senior year will test your time management, and during all of that, you have to make the correct decisions using critical thinking and communicating with others. Technology is one of the best things you can use to help with this. By utilizing technology such as reminders, calendars, and templates for certain types of assignments, it becomes a lot easier to manage everything that needs to be done. During my senior year, I needed to work on my communication skills as I had to work in a large group during my Capstone project in my lab. My biggest challenge was working with team members who didn’t want to do any of the work. My advice to you is to be a leader and encourage those around you to do their best as well, and hold them accountable for doing their part. :PARAGRAPH_END
                                
-                               LIST_ITEM_BULLET: [**Verbose Elaboration:**] As instructed, I have been very verbose in my descriptions. This ensures that every aspect of the assignment is covered in sufficient detail. :LIST_ITEM_END
+                               PARAGRAPH: As I said before, one of my biggest challenges was working in a group where others didn’t even try to participate. However, my solution to the problem wasn’t the best, as I worked harder to compensate for their lack of participation. I highly recommend you don’t go that route, as those who didn’t work hard (or at all) still got the same recognition as those who did all the work. While I didn’t struggle regarding school work, attendance, and grades, I know some seniors find it hard to keep up with all of that. My advice (if this applies to you) is to be a person that you can look back on and be proud of the hard work and commitment you put into even the most mundane of tasks. :PARAGRAPH_END
                                
-                               LIST_ITEM_BULLET: [**Absence of Attachments:**] I acknowledge that this coursework has no attachments, and I have adjusted my approach to ensure that all necessary information is included within this document. :LIST_ITEM_END
+                               PARAGRAPH: Ultimately, if I could go back and do it all over again, I would choose a remarkably similar path. Due to the hard work I put into all my assignments, I do not have many moments that I look back on and think, “I should have done more.” This mentality is something that my senior year has solidified and has become one of my greatest strengths. To me, this last year of high school is more about setting in stone who you are as a person so that the next step, whether that is college or the workforce, isn’t so daunting. In the end, I think that to flourish in this last year of high school, you should always stick to who you are, always do your best (even for the boring tasks), and not grow complacent in the months leading up to graduation. :PARAGRAPH_END
                                
-                               ### SUBHEADING: Conclusion :SUBHEADING_END
+                               PARAGRAPH: Sincerely, :PARAGRAPH_END
                                
-                               PARAGRAPH: INDENT_FIRST_LINE: In conclusion, I believe that this coursework effectively demonstrates my understanding of the material. I have put significant effort into providing a verbose and comprehensive explanation, despite the absence of any attachments. I am confident that this submission meets the requirements of the assignment. :PARAGRAPH_END
                                
-                               FONT: Times New Roman :FONT_END
-                               SPACING: 1.5 :SPACING_END
-                               SIZE: 12 :SIZE_END
+                               
+                               PARAGRAPH: Chase Givelekian :PARAGRAPH_END
+                               
                                """ + systemPrompt
                     }
                 }
@@ -132,7 +129,7 @@ public class GeminiService(string apiKey) : IGeminiService
     public async Task<string> CompleteAssignment(Dictionary<string, string> assignmentInformation, string systemPrompt = "")
     {
         var prompt =
-            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Remember to use lots of bullet points and bold text, please! Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+            $"Complete this assignment from the students point of view based on the following information: Don't add anything else to your response outside of the assignment that you are being asked to complete. Don't include bold text or bullet points inside a formal letter. Here is the assignments information: {string.Join(",\n", assignmentInformation.Select(kv => $"{kv.Key}: {kv.Value}"))}";
         return await GenerateContentAsync(prompt, systemPrompt);
     }
 
